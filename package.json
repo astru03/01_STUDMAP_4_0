@@ -2,7 +2,7 @@
   "name": "01_studmap_4_0",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server_app.js",
   "scripts": {
     "start": "node server_app.js",
     "dev": "nodemon server_app.js"

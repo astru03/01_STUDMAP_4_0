@@ -1,24 +1,16 @@
 const express = require('express');
 const path = require('path');
-
 const app = express();
 const PORT = 3000;
 
-// Static files in "public" verfügbar machen
-app.use(express.static(path.join(__dirname, 'public')));
+// bereitstellen statischer Datein wie HTML, CSS, JavaScript, die sich im Ordner /public oder / node_modules befinden
+app.use(express.static(__dirname + '/public'));
+app.use(express.static(__dirname + '/node_modules'));
 
 // Routes
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'startseite.html'));
-});
-
-app.get('/dokumentation', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'dokumentation.html'));
-});
-
-app.get('/impressum', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'impressum.html'));
-});
+app.get("/", (req, res) => { res.sendFile(__dirname + "/public/startseite.html"); });
+app.get("/dokumentation", (req, res) => { res.sendFile(__dirname + "/public/dokumentation.html"); });
+app.get("/impressum", (req, res) => { res.sendFile(__dirname + "/public/impressum.html"); });
 
 // Server starten
 app.listen(PORT, () => {
