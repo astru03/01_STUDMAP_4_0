@@ -1,53 +1,62 @@
-html {
- position: relative;
- height: 100%;
- padding-bottom: auto;
+html, body {
+  height: 100%; /* Setzt die Höhe auf den gesamten verfügbaren Bildschirm */
+  margin: 0;    /* Entfernt den Standard-Margin des Browsers */
+  padding: 0;   /* Entfernt den Standard-Padding des Browsers */
+}
+
+nav.navbar {
+  position: fixed; /* Fixiert die Navbar oben auf der Seite */
+  width: 100%; /* Lässt die Navbar die gesamte Breite einnehmen */
+  z-index: 1000; /* Stellt sicher, dass die Navbar über anderen Inhalten bleibt */
+  background-color: rgba(45, 98, 159, 0.7); /* Halten Sie die Transparenz */
+  backdrop-filter: blur(5px); /* Fügt einen leichten Blur-Effekt hinzu */
 }
 
 main {
- display: flex;
- justify-content: center;
- background-repeat: no-repeat;
- background-size: cover;
- height: calc(100vh - 115px);
- overflow: auto;
+  display: flex;
+  justify-content: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  overflow: auto;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
 }
 
 #logo {
- width: 70px;
- height: 70px;
+  width: 70px;
+  height: 70px;
+}
+
+#map {
+  height: 100vh;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Leaflet: Zoom-Buttons unterhalb der Navbar platzieren */
+.leaflet-control {
+  margin-top: 70px; /* Abstand entsprechend der Höhe der Navbar */
 }
 
 /* Define breakpoints for different screen sizes */
 @media (min-width: 1200px) {
-  /* Styles for screens 1200px and above */
-  /* For example: */
-  /* Increase font size for headings */
   h1 {
     font-size: 2rem;
   }
 }
 
 @media (min-width: 992px) and (max-width: 1199px) {
-  /* Styles for screens between 992px and 1199px */
-  /* For example: */
-  /* Reduce padding for navigation items */
 }
 
 @media (min-width: 768px) and (max-width: 991px) {
-  /* Styles for screens between 768px and 991px */
-  /* For example: */
-  /* Stack items vertically */
 }
 
 @media (max-width: 767px) {
-  /* Styles for screens 767px and below */
 }
 
 @media (min-width: 2560px) {
-  /* Styles für Bildschirme mit einer Breite von 2560px und größer */
-  /* Zum Beispiel: */
-  /* Vergrößern Sie die Schriftgröße für Überschriften */
   h1 {
     font-size: 2.5rem;
   }
