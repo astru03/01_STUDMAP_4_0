@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="48"
+   height="48"
+   viewBox="0 0 12.7 12.7"
+   version="1.1"
+   id="svg12471"
+   inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
+   sodipodi:docname="NDVI.svg"
+   inkscape:export-filename="NDVI.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview12473"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#505050"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="11.313708"
+     inkscape:cx="16.749593"
+     inkscape:cy="24.527768"
+     inkscape:window-width="1920"
+     inkscape:window-height="1013"
+     inkscape:window-x="-9"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs12468" />
+  <g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <circle
+       id="path2152"
+       style="fill:#ffffff;stroke:#000000;stroke-width:0.264583"
+       cx="0.65131581"
+       cy="4.2118421"
+       r="0" />
+    <circle
+       id="path2154"
+       style="fill:#ffffff;stroke:#000000;stroke-width:0.264583"
+       cx="6.3177633"
+       cy="1.3677632"
+       r="0" />
+    <circle
+       id="path2156"
+       style="fill:#ffffff;stroke:#000000;stroke-width:0.264583"
+       cx="12.136184"
+       cy="4.2118421"
+       r="0" />
+    <circle
+       id="path2162"
+       style="fill:#ffffff;stroke:#000000;stroke-width:0.264583"
+       cx="-3.886184"
+       cy="2.561842"
+       r="0" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:5.3784px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.13446"
+       x="0.019019395"
+       y="10.526917"
+       id="text3235"
+       transform="scale(0.85288363,1.1724929)"><tspan
+         sodipodi:role="line"
+         id="tspan3233"
+         style="font-style:normal;font-variant:normal;font-weight:900;font-stretch:normal;font-family:Arial;-inkscape-font-specification:'Arial Heavy';stroke-width:0.13446"
+         x="0.019019395"
+         y="10.526917">NDVI</tspan></text>
+    <g
+       id="g3636"
+       transform="translate(-0.02338608,0.09984744)">
+      <path
+         style="fill:none;stroke:#000000;stroke-width:0.968639;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+         d="M 1.1658726,5.5303557 3.4598868,0.52159133 5.7539003,5.5303557 Z"
+         id="path3628"
+         sodipodi:nodetypes="cccc" />
+      <path
+         style="fill:none;stroke:#000000;stroke-width:0.968639;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+         d="M 3.4598868,5.630531 V 7.0530201"
+         id="path3630"
+         sodipodi:nodetypes="cc" />
+    </g>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.920875;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+       d="M 9.2986836,7.1767494 V 5.5157241 c 0,0 -1.2831421,-0.088312 -1.6343053,-1.0833452 -0.3511625,-0.9950327 0.1471365,-3.83475411 1.6343053,-3.83475411 1.5475324,0 2.1734844,2.78839971 1.7288034,3.83475411 -0.444682,1.0463548 -1.7288034,1.0833452 -1.7288034,1.0833452"
+       id="path3632"
+       sodipodi:nodetypes="cczszc" />
+  </g>
+</svg>

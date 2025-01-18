@@ -11,3 +11,18 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 window.addEventListener('resize', function() {
   map.invalidateSize(); // Veranlasst die Karte, ihre Größe neu zu berechnen
 });
+
+// Add custom buttons using Leaflet-EasyButton
+L.easyButton(`<img src="../images/Layers.svg" alt="Layer" style="width:20px;height:20px;">`, function() {
+  console.log('Layer button clicked!');
+}).addTo(map).button.classList.add("layer-button");
+
+L.easyButton(`<img src="../images/Upload.svg" alt="Upload" style="width:20px;height:20px;">`, function() {
+  console.log('Upload button clicked!');
+}).addTo(map).button.classList.add("upload-button");
+
+L.easyButton(`<img src="../images/NDVI.svg" alt="NDVI" style="width:20px;height:20px;">`, function() {
+  console.log('NDVI button clicked!');
+}).addTo(map).button.classList.add("ndvi-button");
+
+

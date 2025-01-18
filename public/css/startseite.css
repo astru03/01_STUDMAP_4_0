@@ -44,7 +44,22 @@ main {
   position: absolute;
   top: 70px !important;
 }
+/* Position der Layer-Button */
+.layer-button {
+  position: absolute;
+  top: 140px;
+}
+/* Position der Upload-Button */
+.upload-button {
+  position: absolute;
+  top: 170px;
+}
 
+/* Position der NDVI-Button */
+.ndvi-button {
+  position: absolute;
+  top: 200px;
+}
 /* Define breakpoints for different screen sizes */
 @media (min-width: 1200px) {
   h1 {
@@ -53,6 +68,7 @@ main {
 }
 
 @media (min-width: 992px) and (max-width: 1199px) {
+  
 }
 
 @media (min-width: 768px) and (max-width: 991px) {
