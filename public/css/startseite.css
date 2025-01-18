@@ -4,6 +4,10 @@ html, body {
   padding: 0;   /* Entfernt den Standard-Padding des Browsers */
 }
 
+.nav-link {
+  margin-left: 20px; /* Fügt links zusätzlichen Innenabstand hinzu */
+}
+
 nav.navbar {
   position: fixed; /* Fixiert die Navbar oben auf der Seite */
   width: 100%; /* Lässt die Navbar die gesamte Breite einnehmen */
@@ -24,8 +28,8 @@ main {
 }
 
 #logo {
-  width: 70px;
-  height: 70px;
+  width: 180px;
+  height: 40px;
 }
 
 #map {
@@ -35,9 +39,10 @@ main {
   padding: 0;
 }
 
-/* Leaflet: Zoom-Buttons unterhalb der Navbar platzieren */
-.leaflet-control {
-  margin-top: 70px; /* Abstand entsprechend der Höhe der Navbar */
+/* Leaflet-Zoom-Button verschieben */
+.leaflet-control-zoom {
+  position: absolute;
+  top: 70px !important;
 }
 
 /* Define breakpoints for different screen sizes */

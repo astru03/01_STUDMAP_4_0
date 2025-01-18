@@ -4,6 +4,10 @@ html {
   padding-bottom: auto;
 }
 
+.nav-link {
+  margin-left: 20px; /* Fügt links zusätzlichen Innenabstand hinzu */
+}
+
 main {
   display: flex;
   justify-content: center;
@@ -13,8 +17,8 @@ main {
 }
 
 #logo {
-  width: 70px;
-  height: 70px;
+  width: 180px;
+  height: 40px;
 }
 
 
