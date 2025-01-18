@@ -1,19 +1,29 @@
-html, body {
-  height: 100%; /* Setzt die Höhe auf den gesamten verfügbaren Bildschirm */
-  margin: 0;    /* Entfernt den Standard-Margin des Browsers */
-  padding: 0;   /* Entfernt den Standard-Padding des Browsers */
+html,
+body {
+  height: 100%;
+  /* Setzt die Höhe auf den gesamten verfügbaren Bildschirm */
+  margin: 0;
+  /* Entfernt den Standard-Margin des Browsers */
+  padding: 0;
+  /* Entfernt den Standard-Padding des Browsers */
 }
 
 .nav-link {
-  margin-left: 20px; /* Fügt links zusätzlichen Innenabstand hinzu */
+  margin-left: 20px;
+  /* Fügt links zusätzlichen Innenabstand hinzu */
 }
 
 nav.navbar {
-  position: fixed; /* Fixiert die Navbar oben auf der Seite */
-  width: 100%; /* Lässt die Navbar die gesamte Breite einnehmen */
-  z-index: 1000; /* Stellt sicher, dass die Navbar über anderen Inhalten bleibt */
-  background-color: rgba(45, 98, 159, 0.7); /* Halten Sie die Transparenz */
-  backdrop-filter: blur(5px); /* Fügt einen leichten Blur-Effekt hinzu */
+  position: fixed;
+  /* Fixiert die Navbar oben auf der Seite */
+  width: 100%;
+  /* Lässt die Navbar die gesamte Breite einnehmen */
+  z-index: 1000;
+  /* Stellt sicher, dass die Navbar über anderen Inhalten bleibt */
+  background-color: rgba(45, 98, 159, 0.7);
+  /* Halten Sie die Transparenz */
+  backdrop-filter: blur(5px);
+  /* Fügt einen leichten Blur-Effekt hinzu */
 }
 
 main {
@@ -39,46 +49,105 @@ main {
   padding: 0;
 }
 
-/* Leaflet-Zoom-Button verschieben */
-.leaflet-control-zoom {
-  position: absolute;
-  top: 70px !important;
-}
-/* Position der Layer-Button */
-.layer-button {
-  position: absolute;
-  top: 140px;
-}
-/* Position der Upload-Button */
-.upload-button {
-  position: absolute;
-  top: 170px;
+/* Define breakpoints for different screen sizes */
+@media (max-width: 2560px) {
+  h1 {
+    font-size: 2.5rem;
+  }
+    /* Leaflet-Zoom-Button verschieben */
+    .leaflet-control-zoom {
+      position: absolute;
+      top: 70px !important;
+    }
+    /* Position der NDVI-Button */
+    .ndvi-button {
+      position: absolute;
+      top: 200px;
+    }
+    /* Position der Layer-Button */
+    .layer-button {
+      position: absolute;
+      top: 140px;
+    }
+    /* Position der Upload-Button */
+    .upload-button {
+      position: absolute;
+      top: 170px;
+    }
 }
 
-/* Position der NDVI-Button */
-.ndvi-button {
-  position: absolute;
-  top: 200px;
-}
-/* Define breakpoints for different screen sizes */
-@media (min-width: 1200px) {
+@media (max-width: 1200px) {
   h1 {
     font-size: 2rem;
   }
+  /* Leaflet-Zoom-Button verschieben */
+  .leaflet-control-zoom {
+    position: absolute;
+    top: 70px !important;
+  }
+  /* Position der NDVI-Button */
+  .ndvi-button {
+    position: absolute;
+    top: 200px;
+  }
+  /* Position der Layer-Button */
+  .layer-button {
+    position: absolute;
+    top: 140px;
+  }
+  /* Position der Upload-Button */
+  .upload-button {
+    position: absolute;
+    top: 170px;
+  }
 }
 
-@media (min-width: 992px) and (max-width: 1199px) {
-  
+@media (max-width: 992px) {
+
+  /* Leaflet-Zoom-Button verschieben */
+  .leaflet-control-zoom {
+    position: absolute;
+    top: 70px !important;
+  }
+
+  /* Position der NDVI-Button */
+  .ndvi-button {
+    position: absolute;
+    top: 200px;
+  }
+
+  /* Position der Layer-Button */
+  .layer-button {
+    position: absolute;
+    top: 140px;
+  }
+
+  /* Position der Upload-Button */
+  .upload-button {
+    position: absolute;
+    top: 170px;
+  }
 }
 
-@media (min-width: 768px) and (max-width: 991px) {
-}
-
-@media (max-width: 767px) {
-}
-
-@media (min-width: 2560px) {
-  h1 {
-    font-size: 2.5rem;
+@media (max-width: 768px) {
+  /* Leaflet-Zoom-Button verschieben */
+  .leaflet-control-zoom {
+    position: absolute;
+    top: 70px !important;
+  }
+  /* Position der NDVI-Button */
+  .ndvi-button {
+    position: absolute;
+    top: 200px;
+  }
+  /* Position der Layer-Button */
+  .layer-button {
+    position: absolute;
+    top: 140px;
+  }
+  /* Position der Upload-Button */
+  .upload-button {
+    position: absolute;
+    top: 170px;
   }
 }

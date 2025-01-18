@@ -25,4 +25,58 @@ L.easyButton(`<img src="../images/NDVI.svg" alt="NDVI" style="width:20px;height:
   console.log('NDVI button clicked!');
 }).addTo(map).button.classList.add("ndvi-button");
 
+// Überwache den Zustand der Navbar und die Fenstergröße
+$(document).ready(function () {
+  let isNavbarExpanded = false; // Zustand der Navbar
 
+  function adjustButtonPositions(isNavbarExpanded) {
+    if (isNavbarExpanded) {
+      console.log('Navbar expanded or small screen size.');
+      $('.leaflet-control-zoom').css('cssText', 'top: 220px !important;');
+      $('.layer-button').css('cssText', 'top: 290px !important;');
+      $('.upload-button').css('cssText', 'top: 320px !important;');
+      $('.ndvi-button').css('cssText', 'top: 350px !important;');
+    } else {
+      console.log('Navbar collapsed or larger screen size.');
+      $('.leaflet-control-zoom').css('cssText', 'top: 70px !important;');
+      $('.layer-button').css('cssText', 'top: 140px !important;');
+      $('.upload-button').css('cssText', 'top: 170px !important;');
+      $('.ndvi-button').css('cssText', 'top: 200px !important;');
+    }
+  }
+
+  // Überwache das Öffnen der Navbar
+  $('#navbarNav').on('shown.bs.collapse', function () {
+    console.log('Navbar is expanded.');
+    isNavbarExpanded = true; // Navbar ist offen
+    adjustButtonPositions(true);
+  });
+
+  // Überwache das Schließen der Navbar
+  $('#navbarNav').on('hidden.bs.collapse', function () {
+    console.log('Navbar is collapsed.');
+    isNavbarExpanded = false; // Navbar ist geschlossen
+    adjustButtonPositions(false);
+  });
+
+  // Überwache die Fenstergröße
+  window.addEventListener('resize', function () {
+    console.log('Window resized.');
+    if (window.innerWidth >= 768) {
+      // Wenn der Bildschirm groß wird, behandle Navbar als geschlossen
+      isNavbarExpanded = false;
+      adjustButtonPositions(false);
+    } else {
+      // Wenn der Bildschirm klein ist, überprüfe den Navbar-Zustand
+      const navbarIsExpanded = $('#navbarNav').hasClass('show');
+      adjustButtonPositions(navbarIsExpanded);
+    }
+  });
+
+  // Initialer Check, um die korrekte Position beim Laden zu setzen
+  if (window.innerWidth >= 768) {
+    adjustButtonPositions(false); // Großer Bildschirm, Navbar geschlossen
+  } else {
+    adjustButtonPositions($('#navbarNav').hasClass('show'));
+  }
+});
