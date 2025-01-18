@@ -12,7 +12,10 @@ window.addEventListener('resize', function() {
   map.invalidateSize(); // Veranlasst die Karte, ihre Größe neu zu berechnen
 });
 
-// Add custom buttons using Leaflet-EasyButton
+
+//------------------------------------------------------------------------
+// Hinzufügen von Leaflet-EasyButton
+//------------------------------------------------------------------------
 L.easyButton(`<img src="../images/Layers.svg" alt="Layer" style="width:20px;height:20px;">`, function() {
   console.log('Layer button clicked!');
 }).addTo(map).button.classList.add("layer-button");
@@ -24,8 +27,12 @@ L.easyButton(`<img src="../images/Upload.svg" alt="Upload" style="width:20px;hei
 L.easyButton(`<img src="../images/NDVI.svg" alt="NDVI" style="width:20px;height:20px;">`, function() {
   console.log('NDVI button clicked!');
 }).addTo(map).button.classList.add("ndvi-button");
+//------------------------------------------------------------------------
 
-// Überwache den Zustand der Navbar und die Fenstergröße
+
+//------------------------------------------------------------------------
+// Überwache den Zustand der Navbar und die Fenstergröße um die Easy-Buttons entsprechend zu verschieben
+//------------------------------------------------------------------------
 $(document).ready(function () {
   let isNavbarExpanded = false; // Zustand der Navbar
 
@@ -62,21 +69,22 @@ $(document).ready(function () {
   // Überwache die Fenstergröße
   window.addEventListener('resize', function () {
     console.log('Window resized.');
-    if (window.innerWidth >= 768) {
+    if (window.innerWidth >= 768) { 
       // Wenn der Bildschirm groß wird, behandle Navbar als geschlossen
       isNavbarExpanded = false;
       adjustButtonPositions(false);
     } else {
-      // Wenn der Bildschirm klein ist, überprüfe den Navbar-Zustand
+      // Wenn der Bildschirm klein wird, überprüfe den Navbar-Zustand. Ist die Navbar initial offen oder geschlossen
       const navbarIsExpanded = $('#navbarNav').hasClass('show');
       adjustButtonPositions(navbarIsExpanded);
     }
   });
 
   // Initialer Check, um die korrekte Position beim Laden zu setzen
-  if (window.innerWidth >= 768) {
-    adjustButtonPositions(false); // Großer Bildschirm, Navbar geschlossen
+  if (window.innerWidth >= 768) { // Großer Bildschirm, Navbar geschlossen
+    adjustButtonPositions(false); 
   } else {
     adjustButtonPositions($('#navbarNav').hasClass('show'));
   }
 });
+//------------------------------------------------------------------------
