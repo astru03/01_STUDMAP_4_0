@@ -14,7 +14,7 @@ window.addEventListener('resize', function() {
 
 
 //------------------------------------------------------------------------
-// Hinzufügen von Leaflet-EasyButton
+// Layer-EasyButton Funktionen
 //------------------------------------------------------------------------
 // Open the Layer Modal
 L.easyButton(`<img src="../images/Layers.svg" alt="Layer" style="width:20px;height:20px;">`, function () {
@@ -39,7 +39,6 @@ const categories = [
 
 $(document).ready(function () {
   const $categories = $('#categories');
-
   categories.forEach((category, index) => {
     // Create a category section with subcategories inline
     const $categorySection = $(`<div class="category-section mb-3">
@@ -74,10 +73,16 @@ $(document).ready(function () {
   });
 });
 
+//------------------------------------------------------------------------
+// Upload-EasyButton Funktionen
+//------------------------------------------------------------------------
 L.easyButton(`<img src="../images/Upload.svg" alt="Upload" style="width:20px;height:20px;">`, function() {
   console.log('Upload button clicked!');
 }).addTo(map).button.classList.add("upload-button");
 
+//------------------------------------------------------------------------
+// NDVI-EasyButton Funktionen
+//------------------------------------------------------------------------
 L.easyButton(`<img src="../images/NDVI.svg" alt="NDVI" style="width:20px;height:20px;">`, function() {
   console.log('NDVI button clicked!');
 }).addTo(map).button.classList.add("ndvi-button");
