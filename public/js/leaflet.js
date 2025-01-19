@@ -16,9 +16,63 @@ window.addEventListener('resize', function() {
 //------------------------------------------------------------------------
 // Hinzufügen von Leaflet-EasyButton
 //------------------------------------------------------------------------
-L.easyButton(`<img src="../images/Layers.svg" alt="Layer" style="width:20px;height:20px;">`, function() {
-  console.log('Layer button clicked!');
+// Open the Layer Modal
+L.easyButton(`<img src="../images/Layers.svg" alt="Layer" style="width:20px;height:20px;">`, function () {
+  $('#layerModal').modal('show'); // Bootstrap function to show modal
 }).addTo(map).button.classList.add("layer-button");
+
+// Dynamically Add Categories and Subcategories
+const categories = [
+  {
+    name: 'Kategorie 1',
+    subcategories: ['Subkategorie 1.1', 'Subkategorie 1.2', 'Subkategorie 1.3']
+  },
+  {
+    name: 'Kategorie 2',
+    subcategories: ['Subkategorie 2.1', 'Subkategorie 2.2']
+  },
+  {
+    name: 'Kategorie 3',
+    subcategories: ['Subkategorie 3.1', 'Subkategorie 3.2', 'Subkategorie 3.3', 'Subkategorie 3.4']
+  }
+];
+
+$(document).ready(function () {
+  const $categories = $('#categories');
+
+  categories.forEach((category, index) => {
+    // Create a category section with subcategories inline
+    const $categorySection = $(`<div class="category-section mb-3">
+      <button class="btn btn-outline-primary w-100" data-index="${index}">${category.name}</button>
+      <div class="subcategories mt-2" style="display: none;">
+        ${category.subcategories.map(subcategory => `
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="${subcategory}" id="${subcategory}">
+            <label class="form-check-label" for="${subcategory}">
+              ${subcategory}
+            </label>
+          </div>
+        `).join('')}
+      </div>
+    </div>`);
+    $categories.append($categorySection);
+
+    // Toggle subcategories on category button click
+    $categorySection.find('button').on('click', function () {
+      $categorySection.find('.subcategories').slideToggle();
+    });
+  });
+
+  // Handle OK button click
+  $('#applyFilters').on('click', function () {
+    const selectedLayers = [];
+    $categories.find('input:checked').each(function () {
+      selectedLayers.push($(this).val());
+    });
+    console.log('Selected Layers:', selectedLayers); // Replace with actual logic to load layers
+    $('#layerModal').modal('hide');
+  });
+});
 
 L.easyButton(`<img src="../images/Upload.svg" alt="Upload" style="width:20px;height:20px;">`, function() {
   console.log('Upload button clicked!');

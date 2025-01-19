@@ -49,6 +49,48 @@ main {
   padding: 0;
 }
 
+
+/*------------------------------------------------------------------------*/
+.modal-content {
+  background-color: #f8f9fa;
+  border-radius: 5px; /* Reduced rounded corners */
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+.modal-header {
+  border-bottom: 1px solid #dee2e6;
+  padding: 15px 20px;
+}
+.modal-title {
+  font-size: 0.9rem; /* Smaller title size */
+  font-weight: bold;
+  color: #2d629f;
+}
+.modal-footer {
+  border-top: 1px solid #dee2e6;
+  padding: 15px 20px;
+}
+#categories .category-section {
+  display: block;
+  width: 100%;
+}
+#categories button {
+  border-radius: 5px; /* Match modal corner style */
+}
+.subcategories .form-check {
+  margin-bottom: 10px;
+  padding-left: 20px; /* Indent subcategories */
+}
+.subcategories {
+  border-left: 2px solid #dee2e6;
+  margin-left: 10px;
+  padding-left: 10px;
+}
+
+
+
+
+
+/*------------------------------------------------------------------------*/
 /* Define breakpoints for different screen sizes */
 @media (max-width: 2560px) {
   h1 {

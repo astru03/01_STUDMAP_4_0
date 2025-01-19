@@ -71,6 +71,27 @@
   <div id="map" style="height: 100vh; width: 100%;"></div>
 </main>
 
+<!-- Layer Selection Modal -->
+<div class="modal fade" id="layerModal" tabindex="-1" aria-labelledby="layerModalLabel" aria-hidden="true" data-bs-backdrop="false">
+  <div class="modal-dialog modal-md" style="position: absolute; top: 10%; left: 5%;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title" id="layerModalLabel">Layer Auswahl</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Categories and Subcategories -->
+        <div id="categories">
+          <!-- Categories and subcategories will be dynamically added here -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+        <button type="button" class="btn btn-primary" id="applyFilters">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
 
  <!-- Utilities -->
  <link rel="stylesheet" type="text/css" href="/css/startseite.css">
