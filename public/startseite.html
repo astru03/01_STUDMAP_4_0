@@ -74,7 +74,7 @@
     <div id="map" style="height: 100vh; width: 100%;"></div>
   </main>
 
-  <!-- Layer Selection Modal -->
+  <!-- Layer Selection Popup -->
   <div class="modal fade" id="layerModal" tabindex="-1" aria-labelledby="layerModalLabel" aria-hidden="true"
     data-bs-backdrop="false">
     <div class="modal-dialog modal-md" style="position: absolute; top: 10%; left: 5%;">
@@ -99,7 +99,27 @@
 
   <!-- Upload Selection Modal -->
 
+
   <!-- NDVI Selection Modal -->
+
+  <!-- generisches Bootstrap-Modal für Fehlermeldungs-Popup -->
+  <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="errorModalLabel">Fehler</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Fehlermeldung wird hier dynamisch eingefügt -->
+          <p id="errorMessage"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Utilities -->
   <link rel="stylesheet" type="text/css" href="/css/startseite.css">

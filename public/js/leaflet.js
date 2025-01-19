@@ -8,7 +8,7 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 
 // Füge ein Event hinzu, damit die Karte sich anpasst, wenn das Fenster seine Größe ändert
-window.addEventListener('resize', function() {
+window.addEventListener('resize', function () {
   map.invalidateSize(); // Veranlasst die Karte, ihre Größe neu zu berechnen
 });
 
@@ -76,14 +76,207 @@ $(document).ready(function () {
 //------------------------------------------------------------------------
 // Upload-EasyButton Funktionen
 //------------------------------------------------------------------------
-L.easyButton(`<img src="../images/Upload.svg" alt="Upload" style="width:20px;height:20px;">`, function() {
-  console.log('Upload button clicked!');
+L.easyButton(`<img src="../images/Upload.svg" alt="Upload" style="width:20px;height:20px;">`, function () {
+  // Create a file input element dynamically
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.multiple = true; // Allow multiple files
+  fileInput.accept = ".geojson,.shp,.kml,.csv,.gpx,.tif,.png,.jpg,.jpeg";
+
+  fileInput.addEventListener('change', function (event) {
+    const files = event.target.files;
+    Array.from(files).forEach(file => {
+      if (!validateFileType(file)) {
+        // Wenn der Dateityp ungültig ist, überspringe den Rest und zeige eine Fehlermeldung an
+        return;
+      }
+
+      const fileName = file.name.toLowerCase();
+      if (fileName.endsWith('.geojson')) {
+        handleGeoJSON(file);
+      } else if (fileName.endsWith('.shp')) {
+        handleShapefile(file);
+      } else if (fileName.endsWith('.kml')) {
+        handleKML(file);
+      } else if (fileName.endsWith('.csv')) {
+        handleCSV(file);
+      } else if (fileName.endsWith('.gpx')) {
+        handleGPX(file);
+      } else if (fileName.endsWith('.tif')) {
+        handleGeoTIFF(file);
+      } else if (fileName.endsWith('.png') || fileName.endsWith('.jpg') || fileName.endsWith('.jpeg')) {
+        handleImageOverlay(file);
+      } else {
+        alert('Unsupported file format: ' + file.name); // Für den Fall, dass noch ein Format übrig bleibt
+      }
+    });
+  });
+
+  fileInput.click();
 }).addTo(map).button.classList.add("upload-button");
+
+// Function to handle GeoJSON
+function handleGeoJSON(file) {
+  const reader = new FileReader();
+
+  // Lese die Datei ein
+  reader.onload = function (e) {
+    try {
+      // Versuche, die Datei als GeoJSON zu parsen
+      const geojson = JSON.parse(e.target.result);
+
+      // Prüfe, ob das GeoJSON gültig ist
+      if (geojson.type !== "FeatureCollection" || !Array.isArray(geojson.features)) {
+        throw new Error("Die GeoJSON Formatierung ist nicht korrekt.");
+       }
+
+      // Zulässige Geometrie-Typen
+      const validGeometries = ["Point", "LineString", "Polygon", "MultiPolygon", "MultiLineString", "MultiPoint"];
+
+      // Prüfe jede Feature-Geometrie
+      for (const feature of geojson.features) {
+        if (!feature.geometry || !validGeometries.includes(feature.geometry.type)) {
+          throw new Error(`Ungültige Geometrie im GeoJSON gefunden: ${feature.geometry?.type || "undefined"}`);
+        }
+      }
+
+      // Füge die GeoJSON-Daten zur Karte hinzu
+      L.geoJSON(geojson, {
+        onEachFeature: function (feature, layer) {
+          const props = feature.properties || {};
+          const popupContent = Object.keys(props).map(key => `<strong>${key}:</strong> ${props[key]}`).join("<br>");
+          layer.bindPopup(popupContent || "Keine zusätzlichen Informationen verfügbar.");
+        }
+      }).addTo(map);
+
+      console.log("GeoJSON erfolgreich hinzugefügt.");
+    } catch (err) {
+      // Zeige die tatsächliche Fehlermeldung im Modal an
+      showErrorModal(err.message);
+    }
+  };
+
+  reader.readAsText(file);
+}
+
+// Function to handle Shapefile
+function handleShapefile(file) {
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    shp(e.target.result).then(function (geojson) {
+      L.geoJSON(geojson).addTo(map);
+    });
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// Function to handle KML
+function handleKML(file) {
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const kmlLayer = omnivore.kml.parse(e.target.result);
+    kmlLayer.addTo(map);
+  };
+  reader.readAsText(file);
+}
+
+// Function to handle CSV
+function handleCSV(file) {
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const lines = e.target.result.split('\n');
+    const header = lines[0].split(',');
+    const latIndex = header.indexOf('lat');
+    const lonIndex = header.indexOf('lon');
+
+    if (latIndex === -1 || lonIndex === -1) {
+      alert('CSV file must contain lat and lon columns.');
+      return;
+    }
+
+    const markers = [];
+    lines.slice(1).forEach(line => {
+      const values = line.split(',');
+      const lat = parseFloat(values[latIndex]);
+      const lon = parseFloat(values[lonIndex]);
+
+      if (!isNaN(lat) && !isNaN(lon)) {
+        markers.push(L.marker([lat, lon]));
+      }
+    });
+
+    if (markers.length > 0) {
+      L.featureGroup(markers).addTo(map);
+    } else {
+      alert('No valid points found in the CSV file.');
+    }
+  };
+  reader.readAsText(file);
+}
+
+// Function to handle GPX
+function handleGPX(file) {
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const gpxLayer = new L.GPX(e.target.result, {
+      async: true
+    });
+    gpxLayer.addTo(map);
+  };
+  reader.readAsText(file);
+}
+
+// Function to handle GeoTIFF
+function handleGeoTIFF(file) {
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    parseGeoraster(e.target.result).then(georaster => {
+      const layer = new GeoRasterLayer({
+        georaster,
+        opacity: 0.7
+      });
+      layer.addTo(map);
+    });
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// Function to handle Image Overlay (PNG, JPG)
+function handleImageOverlay(file) {
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const bounds = [[51.95, 7.58], [51.99, 7.64]]; // Example bounds, should come from user input
+    const imageOverlay = L.imageOverlay(e.target.result, bounds).addTo(map);
+    map.fitBounds(bounds);
+  };
+  reader.readAsDataURL(file);
+}
+
+// Function ErrorMessage
+function showErrorModal(message) {
+  const errorMessage = document.getElementById("errorMessage");
+  errorMessage.textContent = message; // Setze die Fehlermeldung
+  const errorModal = new bootstrap.Modal(document.getElementById("errorModal"));
+  errorModal.show(); // Zeige das Modal an
+}
+
+// Function Valide Datentyp
+function validateFileType(file) {
+  const validExtensions = [".geojson", ".shp", ".kml", ".csv", ".gpx", ".tif", ".png", ".jpg", ".jpeg"];
+  const fileName = file.name.toLowerCase();
+  const isValid = validExtensions.some(ext => fileName.endsWith(ext));
+  if (!isValid) {
+    showErrorModal("Es wurde ein falsches Datenformat ausgewählt.");
+    return false;
+  }
+  return true;
+}
+
 
 //------------------------------------------------------------------------
 // NDVI-EasyButton Funktionen
 //------------------------------------------------------------------------
-L.easyButton(`<img src="../images/NDVI.svg" alt="NDVI" style="width:20px;height:20px;">`, function() {
+L.easyButton(`<img src="../images/NDVI.svg" alt="NDVI" style="width:20px;height:20px;">`, function () {
   console.log('NDVI button clicked!');
 }).addTo(map).button.classList.add("ndvi-button");
 //------------------------------------------------------------------------
@@ -128,7 +321,7 @@ $(document).ready(function () {
   // Überwache die Fenstergröße
   window.addEventListener('resize', function () {
     console.log('Window resized.');
-    if (window.innerWidth >= 768) { 
+    if (window.innerWidth >= 768) {
       // Wenn der Bildschirm groß wird, behandle Navbar als geschlossen
       isNavbarExpanded = false;
       adjustButtonPositions(false);
@@ -141,7 +334,7 @@ $(document).ready(function () {
 
   // Initialer Check, um die korrekte Position beim Laden zu setzen
   if (window.innerWidth >= 768) { // Großer Bildschirm, Navbar geschlossen
-    adjustButtonPositions(false); 
+    adjustButtonPositions(false);
   } else {
     adjustButtonPositions($('#navbarNav').hasClass('show'));
   }
