@@ -12,9 +12,10 @@ window.addEventListener('resize', function () {
   map.invalidateSize(); // Veranlasst die Karte, ihre Größe neu zu berechnen
 });
 
-
+//------------------------------------------------------------------------
 //------------------------------------------------------------------------
 // Layer-EasyButton Funktionen
+//------------------------------------------------------------------------
 //------------------------------------------------------------------------
 // Open the Layer Modal
 L.easyButton(`<img src="../images/Layers.svg" alt="Layer" style="width:20px;height:20px;">`, function () {
@@ -22,59 +23,103 @@ L.easyButton(`<img src="../images/Layers.svg" alt="Layer" style="width:20px;heig
 }).addTo(map).button.classList.add("layer-button");
 
 // Dynamically Add Categories and Subcategories
-const categories = [
-  {
-    name: 'Kategorie 1',
-    subcategories: ['Subkategorie 1.1', 'Subkategorie 1.2', 'Subkategorie 1.3']
-  },
-  {
-    name: 'Kategorie 2',
-    subcategories: ['Subkategorie 2.1', 'Subkategorie 2.2']
-  },
-  {
-    name: 'Kategorie 3',
-    subcategories: ['Subkategorie 3.1', 'Subkategorie 3.2', 'Subkategorie 3.3', 'Subkategorie 3.4']
+const categories = {
+  'OpenNRW': {
+    name: 'OpenNRW',
+    layers: {
+      'WMS_NW_ABK': 'OpenNRW:WMS_NW_ABK',
+      'WMS_NW_DGK5': 'OpenNRW:WMS_NW_DGK5'
+    }
   }
-];
+};
 
 $(document).ready(function () {
   const $categories = $('#categories');
-  categories.forEach((category, index) => {
-    // Create a category section with subcategories inline
+
+  Object.keys(categories).forEach((catKey) => {
+    const category = categories[catKey];
     const $categorySection = $(`<div class="category-section mb-3">
-      <button class="btn btn-outline-primary w-100" data-index="${index}">${category.name}</button>
+      <button class="btn btn-outline-primary w-100">${category.name}</button>
       <div class="subcategories mt-2" style="display: none;">
-        ${category.subcategories.map(subcategory => `
+        ${Object.keys(category.layers).map(layerKey => `
           <div class="form-check">
-            <input class="form-check-input" type="checkbox" value="${subcategory}" id="${subcategory}">
-            <label class="form-check-label" for="${subcategory}">
-              ${subcategory}
+            <input class="form-check-input layer-checkbox" type="checkbox" value="${category.layers[layerKey]}" id="${layerKey}">
+            <label class="form-check-label" for="${layerKey}">
+              ${layerKey}
             </label>
           </div>
         `).join('')}
       </div>
     </div>`);
+    
     $categories.append($categorySection);
-
-    // Toggle subcategories on category button click
     $categorySection.find('button').on('click', function () {
       $categorySection.find('.subcategories').slideToggle();
     });
   });
+  var wmsLayer; // Variable zum Speichern des aktuellen WMS-Layers
 
-  // Handle OK button click
   $('#applyFilters').on('click', function () {
-    const selectedLayers = [];
-    $categories.find('input:checked').each(function () {
-      selectedLayers.push($(this).val());
-    });
-    console.log('Selected Layers:', selectedLayers); // Replace with actual logic to load layers
-    $('#layerModal').modal('hide');
+      const selectedLayers = $('.layer-checkbox:checked').map(function () {
+          return $(this).val();
+      }).get();
+  
+      if (selectedLayers.length === 1) { // Nur ein Layer sollte gewählt werden!
+          const baseWMSUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/OpenNRW/wms";
+          const selectedLayer = selectedLayers[0];
+  
+          // Koordinatensystem festlegen (Falls bekannt, hier ggf. anpassen oder aus GetCapabilities parsen)
+          const wmsCrs = "EPSG:25832"; // Beispiel: UTM Zone 32N für NRW
+  
+          // WMS URL für den Layer erstellen
+          const wmsUrl = `${baseWMSUrl}?service=WMS&version=1.3.0&request=GetMap&layers=${selectedLayer}&styles=&format=image/png&transparent=true&crs=${wmsCrs}`;
+  
+          // Falls bereits ein WMS-Layer existiert, entferne ihn
+          if (wmsLayer) {
+              map.removeLayer(wmsLayer);
+          }
+  
+          // Neuen WMS-Layer zur Karte hinzufügen
+          wmsLayer = L.tileLayer.wms(baseWMSUrl, {
+              layers: selectedLayer,
+              format: 'image/png',
+              transparent: true,
+              attribution: "&copy; OpenNRW"
+          }).addTo(map);
+  
+          // Informationen im Modal anzeigen
+          $('#wmsLayerName').text(selectedLayer);
+          $('#wmsCrs').text(wmsCrs);
+          $('#wmsUrlInput').val(wmsUrl);
+  
+          // Modal öffnen
+          $('#wmsInfoModal').modal('show');
+      } else {
+          alert("Bitte genau einen Layer auswählen.");
+      }
+  
+      $('#layerModal').modal('hide');
   });
+  
+  // Kopier-Button für die WMS-URL
+  $('#copyWmsUrl').on('click', function () {
+      var wmsUrlInput = document.getElementById("wmsUrlInput");
+      wmsUrlInput.select();
+      wmsUrlInput.setSelectionRange(0, 99999); // Für mobile Geräte
+      document.execCommand("copy");
+      alert("WMS-URL wurde kopiert!");
+  });
+  
 });
 
+
+
+
+
+//------------------------------------------------------------------------
 //------------------------------------------------------------------------
 // Upload-EasyButton Funktionen
+//------------------------------------------------------------------------
 //------------------------------------------------------------------------
 L.easyButton(`<img src="../images/Upload.svg" alt="Upload" style="width:20px;height:20px;">`, function () {
   // Create a file input element dynamically
@@ -271,10 +316,15 @@ function validateFileType(file) {
   }
   return true;
 }
+//------------------------------------------------------------------------
+
+
 
 
 //------------------------------------------------------------------------
+//------------------------------------------------------------------------
 // NDVI-EasyButton Funktionen
+//------------------------------------------------------------------------
 //------------------------------------------------------------------------
 L.easyButton(`<img src="../images/NDVI.svg" alt="NDVI" style="width:20px;height:20px;">`, function () {
   console.log('NDVI button clicked!');
@@ -282,8 +332,12 @@ L.easyButton(`<img src="../images/NDVI.svg" alt="NDVI" style="width:20px;height:
 //------------------------------------------------------------------------
 
 
+
+
+//------------------------------------------------------------------------
 //------------------------------------------------------------------------
 // Überwache den Zustand der Navbar und die Fenstergröße um die Easy-Buttons entsprechend zu verschieben
+//------------------------------------------------------------------------
 //------------------------------------------------------------------------
 $(document).ready(function () {
   let isNavbarExpanded = false; // Zustand der Navbar

@@ -124,5 +124,27 @@
   <!-- Utilities -->
   <link rel="stylesheet" type="text/css" href="/css/startseite.css">
   <script type="text/javascript" src="/js/leaflet.js"></script>
+  
+<!-- WMS-Info Modal -->
+<div class="modal fade" id="wmsInfoModal" tabindex="-1" aria-labelledby="wmsInfoModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="wmsInfoModalLabel">WMS Layer Informationen</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p><b>Layer-Name:</b> <span id="wmsLayerName"></span></p>
+        <p><b>Koordinatensystem:</b> <span id="wmsCrs"></span></p>
+        <p><b>WMS URL:</b></p>
+        <input type="text" id="wmsUrlInput" class="form-control" readonly>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
+        <button type="button" class="btn btn-primary" id="copyWmsUrl">URL Kopieren</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 </body>
