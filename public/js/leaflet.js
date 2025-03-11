@@ -17,6 +17,7 @@ window.addEventListener('resize', function () {
 // Layer-EasyButton Funktionen
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
+
 // Open the Layer Modal
 L.easyButton(`<img src="../images/Layers.svg" alt="Layer" style="width:20px;height:20px;">`, function () {
   $('#layerModal').modal('show'); // Bootstrap function to show modal
@@ -36,6 +37,7 @@ const categories = {
 $(document).ready(function () {
   const $categories = $('#categories');
 
+  // Categories and Layer checkboxes
   Object.keys(categories).forEach((catKey) => {
     const category = categories[catKey];
     const $categorySection = $(`<div class="category-section mb-3">
@@ -57,6 +59,7 @@ $(document).ready(function () {
       $categorySection.find('.subcategories').slideToggle();
     });
   });
+
   var wmsLayer; // Variable zum Speichern des aktuellen WMS-Layers
 
   $('#applyFilters').on('click', function () {
@@ -65,19 +68,19 @@ $(document).ready(function () {
       }).get();
   
       if (selectedLayers.length === 1) { // Nur ein Layer sollte gewählt werden!
-          const baseWMSUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/OpenNRW/wms";
           const selectedLayer = selectedLayers[0];
   
-          // Koordinatensystem festlegen (Falls bekannt, hier ggf. anpassen oder aus GetCapabilities parsen)
-          const wmsCrs = "EPSG:25832"; // Beispiel: UTM Zone 32N für NRW
+          // GetCapabilities abrufen, um das CRS für den ausgewählten Layer zu extrahieren
+          fetchLayerCapabilities(selectedLayer);
   
-          // WMS URL für den Layer erstellen
-          const wmsUrl = `${baseWMSUrl}?service=WMS&version=1.3.0&request=GetMap&layers=${selectedLayer}&styles=&format=image/png&transparent=true&crs=${wmsCrs}`;
-  
-          // Falls bereits ein WMS-Layer existiert, entferne ihn
+          // Wenn der Layer bereits hinzugefügt wurde, entfernen wir ihn
           if (wmsLayer) {
               map.removeLayer(wmsLayer);
           }
+  
+          // WMS-URL für den Layer erstellen (CRS wird dynamisch gesetzt)
+          const baseWMSUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/OpenNRW/wms";
+          const wmsUrl = `${baseWMSUrl}?service=WMS&version=1.3.0&request=GetMap&layers=${selectedLayer}&styles=&format=image/png&transparent=true`;
   
           // Neuen WMS-Layer zur Karte hinzufügen
           wmsLayer = L.tileLayer.wms(baseWMSUrl, {
@@ -89,7 +92,6 @@ $(document).ready(function () {
   
           // Informationen im Modal anzeigen
           $('#wmsLayerName').text(selectedLayer);
-          $('#wmsCrs').text(wmsCrs);
           $('#wmsUrlInput').val(wmsUrl);
   
           // Modal öffnen
@@ -109,8 +111,55 @@ $(document).ready(function () {
       document.execCommand("copy");
       alert("WMS-URL wurde kopiert!");
   });
+
+  // Funktion zum Abrufen der GetCapabilities und extrahieren der CRS-Informationen
+  function fetchLayerCapabilities(layerName) {
+    const getCapabilitiesUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/ows?service=WMS&version=1.3.0&request=GetCapabilities";
+
+    $.ajax({
+        url: getCapabilitiesUrl,
+        dataType: 'xml',
+        success: function (xml) {
+            // Das XML nach dem gewünschten Layer durchsuchen
+            const layerElement = $(xml).find(`Layer > Layer > Name:contains(${layerName})`).closest('Layer');
+            if (layerElement.length === 0) {
+                console.error("Layer nicht gefunden in GetCapabilities.");
+                alert("Layer nicht gefunden in GetCapabilities.");
+                return;
+            }
+            
+            const crsList = layerElement.find('CRS').map(function () {
+                return $(this).text();
+            }).get();
+
+            // CRS anzeigen
+            showWMSInfoModal(layerName, crsList);
+        },
+        error: function (xhr, status, error) {
+            console.error("Fehler bei der Anfrage:", status, error);
+            alert("Fehler beim Abrufen der GetCapabilities: " + error);
+        }
+      });
+  }
+
+  // Funktion, um das WMS-Info Modal mit den CRS und der URL zu befüllen
+  function showWMSInfoModal(layerName, crsList) {
+      // CRS und Layer-Name anzeigen
+      const crsText = crsList.join(", ");
+      $('#wmsCrs').text(crsText);
+      $('#wmsLayerName').text(layerName);
   
+      // WMS URL erstellen und anzeigen
+      const baseWMSUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/OpenNRW/wms";
+      const wmsUrl = `${baseWMSUrl}?service=WMS&version=1.3.0&request=GetMap&layers=${layerName}&styles=&format=image/png&transparent=true`;
+      $('#wmsUrlInput').val(wmsUrl);
+  
+      // Modal anzeigen
+      $('#wmsInfoModal').modal('show');
+  }
 });
+
+
 
 
 
