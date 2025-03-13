@@ -69,7 +69,10 @@ $(document).ready(function () {
 
     if (selectedLayers.length === 1) { // Nur ein Layer erlaubt
         const selectedLayer = selectedLayers[0];
-        const geoserverBaseUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/OpenNRW/wms";
+        //An dieser Stelle muss noch eine unterscheidung stattfinden. Zumindest zwischen OpenNRW und ivv6
+        const geoserverBaseUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/OpenNRW/ows"; //so erhalte ich nur die unter OpenNRW
+       // const geoserverBaseUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/ivv6mapsarcgis/ows"; //so erhalte ich nur die unter ivv6
+        //const geoserverBaseUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/ows"; so erhalte ich eine URL die alle WMS dienste enthält die auf dem Geoserverliegen
         const wmsUrl = `${geoserverBaseUrl}?service=WMS&version=1.3.0&request=GetMap&layers=${selectedLayer}&styles=&format=image/png&transparent=true`;
 
         // WMS-Layer zur Karte hinzufügen
