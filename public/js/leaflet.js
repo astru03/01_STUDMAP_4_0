@@ -25,11 +25,30 @@ L.easyButton(`<img src="../images/Layers.svg" alt="Layer" style="width:20px;heig
 
 // Dynamically Add Categories and Subcategories
 const categories = {
+  'UAS': {
+    name: 'UAS',
+    subcategories: {
+      'Höhenmodelle & Geländeanalyse': {},
+      'Multispektrale Analysen & NDVI': {},
+      'Orthophotos & RGB-Aufnahmen': {},
+      'Flüsse': {}
+    }
+  },
   'OpenNRW': {
     name: 'OpenNRW',
-    layers: {
-      'WMS_NW_ABK': 'OpenNRW:WMS_NW_ABK',
-      'WMS_NW_DGK5': 'OpenNRW:WMS_NW_DGK5'
+    subcategories: {
+      'Basiskarten': {
+        layers: {
+          'WMS_NW_ABK': 'OpenNRW:WMS_NW_ABK',
+          'WMS_NW_DGK5': 'OpenNRW:WMS_NW_DGK5'
+        }
+      },
+      'Orthophotos & Overlay': {},
+      'Topographische Karten': {},
+      'Digitales Geländemodell': {},
+      'Höhenlinien und Höhenpunkte': {},
+      'Digitales Oberflächenmodell': {},
+      'Verwaltungskarte': {}
     }
   }
 };
@@ -37,28 +56,65 @@ const categories = {
 $(document).ready(function () {
   const $categories = $('#categories');
 
-  // Categories and Layer checkboxes
   Object.keys(categories).forEach((catKey) => {
     const category = categories[catKey];
     const $categorySection = $(`<div class="category-section mb-3">
       <button class="btn btn-outline-primary w-100">${category.name}</button>
-      <div class="subcategories mt-2" style="display: none;">
-        ${Object.keys(category.layers).map(layerKey => `
-          <div class="form-check">
-            <input class="form-check-input layer-checkbox" type="checkbox" value="${category.layers[layerKey]}" id="${layerKey}">
-            <label class="form-check-label" for="${layerKey}">
-              ${layerKey}
-            </label>
-          </div>
-        `).join('')}
-      </div>
+      <div class="subcategories mt-2" style="display: none;"></div>
     </div>`);
-    
+
     $categories.append($categorySection);
-    $categorySection.find('button').on('click', function () {
-      $categorySection.find('.subcategories').slideToggle();
+    const $subcategories = $categorySection.find('.subcategories');
+
+    Object.keys(category.subcategories).forEach((subKey) => {
+      const subcategory = category.subcategories[subKey];
+      const $subCategorySection = $(`<div class="subcategory-section mb-2">
+        <button class="btn btn-outline-secondary w-100">${subKey}</button>
+        <div class="layers mt-2" style="display: none;"></div>
+      </div>`);
+
+      $subcategories.append($subCategorySection);
+      const $layers = $subCategorySection.find('.layers');
+
+      if (subcategory.layers) {
+        Object.keys(subcategory.layers).forEach((layerKey) => {
+          $layers.append(`
+            <div class="form-check">
+              <input class="form-check-input layer-checkbox" type="checkbox" value="${subcategory.layers[layerKey]}" id="${layerKey}">
+              <label class="form-check-label" for="${layerKey}">
+                ${layerKey}
+              </label>
+            </div>`);
+        });
+      }
+
+      // Hier wird der Klick-Handler für die Subkategorie hinzugefügt
+      $subCategorySection.find('button').on('click', function (e) {
+        // Verhindere, dass der Klick die übergeordnete Kategorie schließt
+        e.stopPropagation(); // Verhindert, dass der Klick nach oben weitergegeben wird.
+
+        // Toggle der Sichtbarkeit der Layer-Checkboxen
+        $layers.slideToggle();
+      });
+    });
+
+    // Hier wird der Klick-Handler für die Hauptkategorie hinzugefügt
+    $categorySection.find('button').on('click', function (e) {
+      // Überprüfe, ob der Klick auf eine Subkategorie oder auf die Hauptkategorie selbst erfolgte
+      if (!$(e.target).closest('.subcategory-section').length) {
+        // Toggle der Sichtbarkeit der Subkategorien, nur wenn auf die Hauptkategorie geklickt wird
+        if ($subcategories.is(":visible")) {
+          $subcategories.slideUp();
+        } else {
+          $subcategories.slideDown();
+        }
+      }
+      
+      // Verhindere das Schließen der Hauptkategorie, wenn auf die Subkategorie geklickt wurde
+      e.stopPropagation();
     });
   });
+
 
   var wmsLayer; // Variable zum Speichern des aktuellen WMS-Layers
 
