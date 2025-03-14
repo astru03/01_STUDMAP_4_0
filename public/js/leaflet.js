@@ -43,23 +43,56 @@ const categories = {
           'WMS_NW_DGK5': 'OpenNRW:WMS_NW_DGK5'
         }
       },
-      'Orthophotos & Overlay': {},
-      'Topographische Karten': {},
-      'Digitales Geländemodell': {},
-      'Höhenlinien und Höhenpunkte': {},
-      'Digitales Oberflächenmodell': {},
-      'Verwaltungskarte': {}
+      'Orthophotos & Overlay': {
+        layers: {
+          'WMS_NW_DOP': 'OpenNRW:WMS_NW_DOP',
+          'WMS_NW_DOP_OVERLAY': 'OpenNRW:WMS_NW_DOP_OVERLAY'
+        }
+      },
+      'Topographische Karten': {
+        layers: {
+          'WMS_NW_DTK10': 'OpenNRW:WMS_NW_DTK10',
+          'WMS_NW_DTK25': 'OpenNRW:WMS_NW_DTK25',
+          'WMS_NW_DTK50': 'OpenNRW:WMS_NW_DTK50',
+          'WMS_NW_DTK100': 'OpenNRW:WMS_NW_DTK100',
+        }
+      },
+      'Digitales Geländemodell': {
+        layers: {
+          'WMS_NW_GELAENDESTUFEN': 'OpenNRW:WMS_NW_GELAENDESTUFEN',
+          'Geländestufen': 'OpenNRW:nw_gelaendestufen',
+          'Geländestufen Metadaten': 'OpenNRW:nw_gelaendestufen_info'
+        }
+      },
+      'Höhenlinien und Höhenpunkte': {
+        layers: {
+          'WMS_NW_HL_HP_SCHWARZ': 'OpenNRW:WMS_NW_HL_HP_SCHWARZ',
+          'WMS_NW_DGK5': 'OpenNRW:WMS_NW_DGK5'
+        }
+      },
+      'Digitales Oberflächenmodell': {
+        layers: {
+          'WMS_NW_NDOM': 'OpenNRW:WMS_NW_NDOM',
+          'WMS_NW_TDOM': 'OpenNRW:WMS_NW_TDOM',
+        }
+      },
+      'Verwaltungskarte': {
+        layers: {
+          'WMS NW VK250': 'OpenNRW:WMS_NW_VK250'
+        }
+      }
     }
   }
 };
 
 $(document).ready(function () {
   const $categories = $('#categories');
+  let selectedCategory = null;
 
   Object.keys(categories).forEach((catKey) => {
     const category = categories[catKey];
     const $categorySection = $(`<div class="category-section mb-3">
-      <button class="btn btn-outline-primary w-100">${category.name}</button>
+      <button class="btn btn-outline-primary w-100 category-button" data-category="${catKey}">${category.name}</button>
       <div class="subcategories mt-2" style="display: none;"></div>
     </div>`);
 
@@ -88,50 +121,45 @@ $(document).ready(function () {
         });
       }
 
-      // Hier wird der Klick-Handler für die Subkategorie hinzugefügt
       $subCategorySection.find('button').on('click', function (e) {
-        // Verhindere, dass der Klick die übergeordnete Kategorie schließt
-        e.stopPropagation(); // Verhindert, dass der Klick nach oben weitergegeben wird.
-
-        // Toggle der Sichtbarkeit der Layer-Checkboxen
+        e.stopPropagation();
         $layers.slideToggle();
       });
     });
 
-    // Hier wird der Klick-Handler für die Hauptkategorie hinzugefügt
-    $categorySection.find('button').on('click', function (e) {
-      // Überprüfe, ob der Klick auf eine Subkategorie oder auf die Hauptkategorie selbst erfolgte
-      if (!$(e.target).closest('.subcategory-section').length) {
-        // Toggle der Sichtbarkeit der Subkategorien, nur wenn auf die Hauptkategorie geklickt wird
-        if ($subcategories.is(":visible")) {
-          $subcategories.slideUp();
-        } else {
-          $subcategories.slideDown();
-        }
+    $categorySection.find('.category-button').on('click', function (e) {
+      selectedCategory = $(this).data('category');
+      if ($subcategories.is(":visible")) {
+        $subcategories.slideUp();
+      } else {
+        $subcategories.slideDown();
       }
-      
-      // Verhindere das Schließen der Hauptkategorie, wenn auf die Subkategorie geklickt wurde
       e.stopPropagation();
     });
   });
 
-
-  var wmsLayer; // Variable zum Speichern des aktuellen WMS-Layers
+  var wmsLayer;
 
   $('#applyFilters').on('click', function () {
     const selectedLayers = $('.layer-checkbox:checked').map(function () {
         return $(this).val();
     }).get();
-
-    if (selectedLayers.length === 1) { // Nur ein Layer erlaubt
+    //Unterscheidung ob UAS oder OpenNRW gewählt wurde, je nach auswahl wird die URL für das WMS angepasst.
+    if (selectedLayers.length === 1 && selectedCategory) {
         const selectedLayer = selectedLayers[0];
-        //An dieser Stelle muss noch eine unterscheidung stattfinden. Zumindest zwischen OpenNRW und ivv6
-        const geoserverBaseUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/OpenNRW/ows"; //so erhalte ich nur die unter OpenNRW
-       // const geoserverBaseUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/ivv6mapsarcgis/ows"; //so erhalte ich nur die unter ivv6
-        //const geoserverBaseUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/ows"; so erhalte ich eine URL die alle WMS dienste enthält die auf dem Geoserverliegen
+        let geoserverBaseUrl;
+
+        if (selectedCategory === 'OpenNRW') {
+            geoserverBaseUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/OpenNRW/ows";
+        } else if (selectedCategory === 'UAS') {
+            geoserverBaseUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/ivv6mapsarcgis/ows";
+        } else {
+            alert("Ungültige Kategorie gewählt.");
+            return;
+        }
+
         const wmsUrl = `${geoserverBaseUrl}?service=WMS&version=1.3.0&request=GetMap&layers=${selectedLayer}&styles=&format=image/png&transparent=true`;
 
-        // WMS-Layer zur Karte hinzufügen
         if (wmsLayer) {
             map.removeLayer(wmsLayer);
         }
@@ -143,13 +171,13 @@ $(document).ready(function () {
             attribution: "&copy; OpenNRW"
         }).addTo(map);
 
-        // URL & Layername direkt setzen
+        //setzt die WMSURL und den Namen
         $('#wmsUrlInput').val(wmsUrl);
         $('#wmsLayerName').text(selectedLayer);
 
-        // CRS abrufen & direkt ins Modal schreiben
         const getCapabilitiesUrl = `http://localhost:3000/proxy?url=${encodeURIComponent("http://zdm-studmap.uni-muenster.de:8080/geoserver/ows?service=WMS&version=1.3.0&request=GetCapabilities")}`;
 
+        //hole aus den getCapabilities das entsprechende Koordinatensystem
         $.ajax({
             url: getCapabilitiesUrl,
             dataType: 'xml',
@@ -165,34 +193,29 @@ $(document).ready(function () {
                     return $(this).text();
                 }).get();
 
-                // CRS in Modal setzen
                 $('#wmsCrs').text(crsList.join(", "));
-                
-                // Modal erst nach erfolgreicher CRS-Abfrage anzeigen
                 $('#wmsInfoModal').modal('show');
             },
             error: function (xhr, status, error) {
                 console.error("Fehler bei der CRS-Abfrage:", status, error);
                 alert("Fehler beim Abrufen der GetCapabilities: " + error);
-                $('#wmsInfoModal').modal('show'); // Falls Fehler, Modal trotzdem zeigen
+                $('#wmsInfoModal').modal('show');
             }
         });
 
         $('#layerModal').modal('hide');
     } else {
-        alert("Bitte genau einen Layer auswählen.");
+        alert("Bitte genau einen Layer auswählen und eine Kategorie wählen.");
     }
-});
+  });
 
-  // Kopier-Button für die WMS-URL
   $('#copyWmsUrl').on('click', function () {
       var wmsUrlInput = document.getElementById("wmsUrlInput");
       wmsUrlInput.select();
-      wmsUrlInput.setSelectionRange(0, 99999); // Für mobile Geräte
+      wmsUrlInput.setSelectionRange(0, 99999);
       document.execCommand("copy");
       alert("WMS-URL wurde kopiert!");
   });
-
 });
 
 
