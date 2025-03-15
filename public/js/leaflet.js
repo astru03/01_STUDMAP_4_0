@@ -246,37 +246,43 @@ $(document).ready(function () {
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 L.easyButton(`<img src="../images/Upload.svg" alt="Upload" style="width:20px;height:20px;">`, function () {
-  // Create a file input element dynamically
   const fileInput = document.createElement('input');
   fileInput.type = 'file';
-  fileInput.multiple = true; // Allow multiple files
-  fileInput.accept = ".geojson,.shp,.kml,.csv,.gpx,.tif,.png,.jpg,.jpeg";
+  fileInput.multiple = true;
+  fileInput.accept = ".shp,.shx,.prj,.dbf,.geojson,.kml,.csv,.gpx,.tif,.png,.jpg,.jpeg";
 
   fileInput.addEventListener('change', function (event) {
-    const files = event.target.files;
-    Array.from(files).forEach(file => {
-      if (!validateFileType(file)) {
-        // Wenn der Dateityp ungültig ist, überspringe den Rest und zeige eine Fehlermeldung an
-        return;
-      }
+    const files = Array.from(event.target.files);
 
-      const fileName = file.name.toLowerCase();
-      if (fileName.endsWith('.geojson')) {
-        handleGeoJSON(file);
-      } else if (fileName.endsWith('.shp')) {
-        handleShapefile(file);
-      } else if (fileName.endsWith('.kml')) {
-        handleKML(file);
-      } else if (fileName.endsWith('.csv')) {
-        handleCSV(file);
-      } else if (fileName.endsWith('.gpx')) {
-        handleGPX(file);
-      } else if (fileName.endsWith('.tif')) {
-        handleGeoTIFF(file);
-      } else if (fileName.endsWith('.png') || fileName.endsWith('.jpg') || fileName.endsWith('.jpeg')) {
-        handleImageOverlay(file);
+    // Gruppiere Shapefile-Komponenten
+    const fileGroups = groupShapefileComponents(files);
+
+    fileGroups.forEach(fileSet => {
+      // Überprüfen, ob alle Shapefile-Komponenten vorhanden sind
+      if (fileSet.shp && fileSet.shx && fileSet.prj && fileSet.dbf) {
+        handleShapefile(fileSet);
       } else {
-        alert('Unsupported file format: ' + file.name); // Für den Fall, dass noch ein Format übrig bleibt
+        showErrorModal("Fehlende Dateien für Shapefile! Es werden .shp, .shx, .prj und .dbf benötigt.");
+      }
+    });
+
+    // Verarbeite andere Dateitypen
+    files.forEach(file => {
+      const fileName = file.name.toLowerCase();
+      if (!fileName.endsWith('.shp') && validateFileType(file)) {
+        if (fileName.endsWith('.geojson')) {
+          handleGeoJSON(file);
+        } else if (fileName.endsWith('.kml')) {
+          handleKML(file);
+        } else if (fileName.endsWith('.csv')) {
+          handleCSV(file);
+        } else if (fileName.endsWith('.gpx')) {
+          handleGPX(file);
+        } else if (fileName.endsWith('.tif')) {
+          handleGeoTIFF(file);
+        } else if (fileName.endsWith('.png') || fileName.endsWith('.jpg') || fileName.endsWith('.jpeg')) {
+          handleImageOverlay(file);
+        }
       }
     });
   });
@@ -284,10 +290,71 @@ L.easyButton(`<img src="../images/Upload.svg" alt="Upload" style="width:20px;hei
   fileInput.click();
 }).addTo(map).button.classList.add("upload-button");
 
+// Funktion zum Gruppieren von Shapefile-Komponenten
+function groupShapefileComponents(files) {
+  let fileGroups = {};
+
+  files.forEach(file => {
+    const baseName = file.name.replace(/\.(shp|shx|prj|dbf)$/i, ''); // Entferne die Endung
+    if (!fileGroups[baseName]) {
+      fileGroups[baseName] = {};
+    }
+
+    if (file.name.endsWith('.shp')) fileGroups[baseName].shp = file;
+    if (file.name.endsWith('.shx')) fileGroups[baseName].shx = file;
+    if (file.name.endsWith('.prj')) fileGroups[baseName].prj = file;
+    if (file.name.endsWith('.dbf')) fileGroups[baseName].dbf = file;
+  });
+
+  return Object.values(fileGroups);
+}
+
+// Funktion zum Verarbeiten von Shapefiles
+function handleShapefile(fileSet) {
+  const shpReader = new FileReader();
+
+  shpReader.onload = function (e) {
+    const shpData = e.target.result;
+
+    // Alle zugehörigen Dateien als ArrayBuffer lesen
+    Promise.all([
+      readFileAsArrayBuffer(fileSet.shx),
+      readFileAsArrayBuffer(fileSet.dbf),
+      readFileAsArrayBuffer(fileSet.prj)
+    ]).then(([shxData, dbfData, prjData]) => {
+      // Verwende die shpjs-Bibliothek zur Umwandlung in GeoJSON
+      shp({ shp: shpData, shx: shxData, dbf: dbfData, prj: prjData }).then(geojson => {
+        const layer = L.geoJSON(geojson).addTo(map);
+        map.fitBounds(layer.getBounds());
+      }).catch(err => {
+        showErrorModal("Fehler beim Verarbeiten der Shapefile: " + err.message);
+      });
+    }).catch(err => {
+      showErrorModal("Fehler beim Lesen der Shapefile-Dateien: " + err.message);
+    });
+  };
+
+  shpReader.readAsArrayBuffer(fileSet.shp);
+}
+
+
+// Hilfsfunktion zum Lesen von Dateien als ArrayBuffer
+function readFileAsArrayBuffer(file) {
+  return new Promise((resolve, reject) => {
+    if (!file) {
+      resolve(null);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsArrayBuffer(file);
+  });
+}
+
 // Function to handle GeoJSON
 function handleGeoJSON(file) {
   const reader = new FileReader();
-
   // Lese die Datei ein
   reader.onload = function (e) {
     try {
@@ -326,17 +393,6 @@ function handleGeoJSON(file) {
   };
 
   reader.readAsText(file);
-}
-
-// Function to handle Shapefile
-function handleShapefile(file) {
-  const reader = new FileReader();
-  reader.onload = function (e) {
-    shp(e.target.result).then(function (geojson) {
-      L.geoJSON(geojson).addTo(map);
-    });
-  };
-  reader.readAsArrayBuffer(file);
 }
 
 // Function to handle KML
@@ -421,19 +477,26 @@ function handleImageOverlay(file) {
   reader.readAsDataURL(file);
 }
 
-// Function ErrorMessage
+// Funktion zum Anzeigen einer Fehlermeldung
 function showErrorModal(message) {
   const errorMessage = document.getElementById("errorMessage");
-  errorMessage.textContent = message; // Setze die Fehlermeldung
+  errorMessage.textContent = message;
   const errorModal = new bootstrap.Modal(document.getElementById("errorModal"));
-  errorModal.show(); // Zeige das Modal an
+  errorModal.show();
 }
 
-// Function Valide Datentyp
+// Funktion zur Validierung von Dateitypen
 function validateFileType(file) {
-  const validExtensions = [".geojson", ".shp", ".kml", ".csv", ".gpx", ".tif", ".png", ".jpg", ".jpeg"];
+  const validExtensions = [".geojson", ".kml", ".csv", ".gpx", ".tif", ".png", ".jpg", ".jpeg"];
+
+  // Shapefile-Komponenten nicht blockieren
+  if (file.name.endsWith(".shp") || file.name.endsWith(".shx") || file.name.endsWith(".prj") || file.name.endsWith(".dbf")) {
+    return true;
+  }
+
   const fileName = file.name.toLowerCase();
   const isValid = validExtensions.some(ext => fileName.endsWith(ext));
+
   if (!isValid) {
     showErrorModal("Es wurde ein falsches Datenformat ausgewählt.");
     return false;
