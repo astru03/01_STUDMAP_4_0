@@ -28,10 +28,26 @@ const categories = {
   'UAS': {
     name: 'UAS',
     subcategories: {
-      'Höhenmodelle & Geländeanalyse': {},
-      'Multispektrale Analysen & NDVI': {},
-      'Orthophotos & RGB-Aufnahmen': {},
-      'Flüsse': {}
+      'Höhenmodelle & Geländeanalyse': {
+        layers: {
+          'HillShade_UAS_2019': 'ivv6mapsarcgis:HillShade UAS 2019',
+          'Hillshade_UAS_2018': 'ivv6mapsarcgis:Hillshade UAS 2018'
+        }
+      },
+      'Multispektrale Analysen & NDVI': {
+        layers: {
+          'Multispectral__WTL1 UAS 2023': 'ivv6mapsarcgis:Multispectra__WTL1 UAS 2023',
+          'Multispectral_WTL1 UAS 2022': 'ivv6mapsarcgis:Multispectral_WTL1 UAS 2022'
+        }
+      },
+      'Orthophotos & RGB-Aufnahmen': {
+        layers: {
+          'RGB_NIR_Sentinel': 'ivv6mapsarcgis:RGB_NIR Sentinel'
+        }
+      },
+      'Flüsse': {
+
+      }
     }
   },
   'OpenNRW': {
