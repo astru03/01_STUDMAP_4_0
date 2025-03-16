@@ -254,22 +254,37 @@ L.easyButton(`<img src="../images/Upload.svg" alt="Upload" style="width:20px;hei
   fileInput.addEventListener('change', function (event) {
     const files = Array.from(event.target.files);
 
-    // Gruppiere Shapefile-Komponenten
-    const fileGroups = groupShapefileComponents(files);
+    // Prüfen, ob eine der ausgewählten Dateien eine Shapefile-Komponente ist
+    const containsShapefile = files.some(file => 
+      file.name.endsWith('.shp') || file.name.endsWith('.shx') || 
+      file.name.endsWith('.prj') || file.name.endsWith('.dbf')
+    );
 
-    fileGroups.forEach(fileSet => {
-      // Überprüfen, ob alle Shapefile-Komponenten vorhanden sind
-      if (fileSet.shp && fileSet.shx && fileSet.prj && fileSet.dbf) {
-        handleShapefile(fileSet);
-      } else {
-        showErrorModal("Fehlende Dateien für Shapefile! Es werden .shp, .shx, .prj und .dbf benötigt.");
-      }
-    });
+    if (containsShapefile) {
+      // Gruppiere nur dann Shapefile-Komponenten, wenn mindestens eine Shapefile-Datei dabei ist
+      const fileGroups = groupShapefileComponents(files);
 
-    // Verarbeite andere Dateitypen
+      fileGroups.forEach(fileSet => {
+        // Überprüfen, ob alle Shapefile-Komponenten vorhanden sind
+        if (fileSet.shp && fileSet.shx && fileSet.prj && fileSet.dbf) {
+          handleShapefile(fileSet);
+        } else {
+          showErrorModal("Fehlende Dateien für Shapefile! Es werden .shp, .shx, .prj und .dbf benötigt.");
+        }
+      });
+
+      // Shapefile-Komponenten aus der weiteren Verarbeitung entfernen
+      files = files.filter(file => 
+        !file.name.endsWith('.shp') && !file.name.endsWith('.shx') && 
+        !file.name.endsWith('.prj') && !file.name.endsWith('.dbf')
+      );
+    }
+
+    // Verarbeite alle anderen Dateitypen ohne Shapefile-Überprüfung
     files.forEach(file => {
       const fileName = file.name.toLowerCase();
-      if (!fileName.endsWith('.shp') && validateFileType(file)) {
+
+      if (validateFileType(file)) {
         if (fileName.endsWith('.geojson')) {
           handleGeoJSON(file);
         } else if (fileName.endsWith('.kml')) {
@@ -395,11 +410,17 @@ function handleGeoJSON(file) {
   reader.readAsText(file);
 }
 
-// Function to handle KML
+// Funktion zum Laden von KML-Dateien in Leaflet
 function handleKML(file) {
   const reader = new FileReader();
   reader.onload = function (e) {
-    const kmlLayer = omnivore.kml.parse(e.target.result);
+    const kmlText = e.target.result;
+    const kmlLayer = omnivore.kml.parse(kmlText);
+
+    kmlLayer.on('ready', function() {
+      map.fitBounds(kmlLayer.getBounds()); // Karte zoomt auf das KML-Gebiet
+    });
+
     kmlLayer.addTo(map);
   };
   reader.readAsText(file);
