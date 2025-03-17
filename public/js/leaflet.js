@@ -427,38 +427,69 @@ function handleKML(file) {
 }
 
 // Function to handle CSV
+// Funktion zum Laden von CSV mit Punkten, Linien & Polygonen
 function handleCSV(file) {
   const reader = new FileReader();
   reader.onload = function (e) {
     const lines = e.target.result.split('\n');
-    const header = lines[0].split(',');
+    const header = splitCSVLine(lines[0]); // Verbesserte Split-Funktion
+    const nameIndex = header.indexOf('name');
     const latIndex = header.indexOf('lat');
     const lonIndex = header.indexOf('lon');
+    const geomIndex = header.indexOf('geometry');
 
-    if (latIndex === -1 || lonIndex === -1) {
-      alert('CSV file must contain lat and lon columns.');
+    if (nameIndex === -1 || geomIndex === -1) {
+      alert('CSV file must contain name and geometry columns.');
       return;
     }
 
-    const markers = [];
+    const features = [];
     lines.slice(1).forEach(line => {
-      const values = line.split(',');
+      if (!line.trim()) return; // Überspringt leere Zeilen
+
+      const values = splitCSVLine(line); // Korrektes Parsen der Zeile
+      const name = values[nameIndex] || "Unbenannt";
       const lat = parseFloat(values[latIndex]);
       const lon = parseFloat(values[lonIndex]);
+      const geometry = values[geomIndex] ? values[geomIndex].trim() : "";
 
-      if (!isNaN(lat) && !isNaN(lon)) {
-        markers.push(L.marker([lat, lon]));
+      if (!isNaN(lat) && !isNaN(lon) && geometry === "") {
+        // 🟢 Punkt erstellen
+        features.push(L.marker([lat, lon]).bindPopup(name));
+      } else if (geometry.startsWith("LINESTRING")) {
+        // 🔵 Linie parsen
+        const coords = parseWKT(geometry);
+        features.push(L.polyline(coords, { color: 'blue' }).bindPopup(name));
+      } else if (geometry.startsWith("POLYGON")) {
+        // 🟢 Polygon parsen
+        const coords = parseWKT(geometry);
+        features.push(L.polygon(coords, { color: 'green' }).bindPopup(name));
       }
     });
 
-    if (markers.length > 0) {
-      L.featureGroup(markers).addTo(map);
+    if (features.length > 0) {
+      L.featureGroup(features).addTo(map);
     } else {
-      alert('No valid points found in the CSV file.');
+      alert('No valid geometries found in the CSV file.');
     }
   };
   reader.readAsText(file);
 }
+
+// 🛠 Funktion zum Parsen von WKT (Well-Known Text)
+function parseWKT(wkt) {
+  return wkt.match(/[-+]?\d*\.\d+ [-+]?\d+\.\d+/g).map(coord => {
+    const [lon, lat] = coord.split(' ').map(Number);
+    return [lat, lon]; // Leaflet braucht [lat, lon] statt [lon, lat]
+  });
+}
+
+// 🛠 Funktion zum sicheren Parsen einer CSV-Zeile
+function splitCSVLine(line) {
+  return line.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g)?.map(value => value.replace(/^"|"$/g, '')) || [];
+}
+
+
 
 // Function to handle GPX
 function handleGPX(file) {
