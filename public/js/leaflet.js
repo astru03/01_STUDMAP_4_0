@@ -260,10 +260,12 @@ L.easyButton(`<img src="../images/Upload.svg" alt="Upload" style="width:20px;hei
       file.name.endsWith('.prj') || file.name.endsWith('.dbf')
     );
 
+    //wenn mindestens eine Shapefile-Datei dabei ist
     if (containsShapefile) {
-      // Gruppiere nur dann Shapefile-Komponenten, wenn mindestens eine Shapefile-Datei dabei ist
+      // Gruppiere die Shapefile-Komponenten
       const fileGroups = groupShapefileComponents(files);
 
+      // durchlaufe fileGroups
       fileGroups.forEach(fileSet => {
         // Überprüfen, ob alle Shapefile-Komponenten vorhanden sind
         if (fileSet.shp && fileSet.shx && fileSet.prj && fileSet.dbf) {
@@ -273,7 +275,7 @@ L.easyButton(`<img src="../images/Upload.svg" alt="Upload" style="width:20px;hei
         }
       });
 
-      // Shapefile-Komponenten aus der weiteren Verarbeitung entfernen
+      // Shapefile-Komponenten aus der weiteren Verarbeitung entfernen. WARUM?
       files = files.filter(file => 
         !file.name.endsWith('.shp') && !file.name.endsWith('.shx') && 
         !file.name.endsWith('.prj') && !file.name.endsWith('.dbf')
@@ -324,7 +326,7 @@ function groupShapefileComponents(files) {
   return Object.values(fileGroups);
 }
 
-// Funktion zum Verarbeiten von Shapefiles
+// Funktion zum Verarbeiten von Shapefiles (FERTIG)
 function handleShapefile(fileSet) {
   const shpReader = new FileReader();
 
@@ -353,7 +355,7 @@ function handleShapefile(fileSet) {
 }
 
 
-// Hilfsfunktion zum Lesen von Dateien als ArrayBuffer
+// shp-Zusatzfunktion: Funktion zum Lesen von Dateien als ArrayBuffer
 function readFileAsArrayBuffer(file) {
   return new Promise((resolve, reject) => {
     if (!file) {
@@ -367,7 +369,7 @@ function readFileAsArrayBuffer(file) {
   });
 }
 
-// Function to handle GeoJSON
+// Function to handle GeoJSON (FERTIG)
 function handleGeoJSON(file) {
   const reader = new FileReader();
   // Lese die Datei ein
@@ -410,7 +412,7 @@ function handleGeoJSON(file) {
   reader.readAsText(file);
 }
 
-// Funktion zum Laden von KML-Dateien in Leaflet
+// Funktion zum Laden von KML-Dateien in Leaflet (FERTIG)
 function handleKML(file) {
   const reader = new FileReader();
   reader.onload = function (e) {
@@ -426,7 +428,7 @@ function handleKML(file) {
   reader.readAsText(file);
 }
 
-// Function to handle CSV
+// Function to handle CSV (nochmal überarbeiten)
 // Funktion zum Laden von CSV mit Punkten, Linien & Polygonen
 function handleCSV(file) {
   const reader = new FileReader();
@@ -476,7 +478,7 @@ function handleCSV(file) {
   reader.readAsText(file);
 }
 
-// 🛠 Funktion zum Parsen von WKT (Well-Known Text)
+// csv-Zusatzfunktion: Funktion zum Parsen von WKT (Well-Known Text)
 function parseWKT(wkt) {
   return wkt.match(/[-+]?\d*\.\d+ [-+]?\d+\.\d+/g).map(coord => {
     const [lon, lat] = coord.split(' ').map(Number);
@@ -484,26 +486,75 @@ function parseWKT(wkt) {
   });
 }
 
-// 🛠 Funktion zum sicheren Parsen einer CSV-Zeile
+// csv-Zusatzfunktion: Funktion zum sicheren Parsen einer CSV-Zeile
 function splitCSVLine(line) {
   return line.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g)?.map(value => value.replace(/^"|"$/g, '')) || [];
 }
 
 
 
-// Function to handle GPX
+// Function to handle GPX (FERTIG)
 function handleGPX(file) {
   const reader = new FileReader();
   reader.onload = function (e) {
-    const gpxLayer = new L.GPX(e.target.result, {
-      async: true
+    // Definition des Icons für Waypoints (ohne Schatten)
+    const waypointIcon = new L.Icon({
+      iconUrl: '/images/marker-icon.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowUrl: null,
+      alt: ""
     });
+
+    const gpxLayer = new L.GPX(e.target.result, {
+      async: true,
+      marker_options: {
+        startIconUrl: '/images/marker-icon.png',
+        endIconUrl: '/images/marker-icon.png',
+        shadowUrl: '/images/marker-shadow.png', // Schatten für Start- und Endmarker entfernen
+        waypointIcon: waypointIcon, // Verwende das definierte Icon für Waypoints
+        wptIconUrls: {
+          '': '/images/marker-icon.png'  // Leerer String als Schlüssel
+        },
+        pointMatchers: [
+          {
+            regex: /./,  // Matcht alles
+            icon: waypointIcon
+          }
+        ]
+      }
+    }).on('loaded', function (e) {
+      map.fitBounds(e.target.getBounds());
+      
+    }).on('addpoint', function (e) {
+      console.log("Waypoint hinzugefügt:", e.point);
+      // Extrahiere den Namen aus e.point.options.title
+      const waypointName = e.point.options.title;
+
+      let waypointDescription = '';
+      if (e.point._popup && e.point._popup._content) {
+          waypointDescription = e.point._popup._content.replace(/<[^>]*>?/gm, ''); // Entferne HTML-Tags
+      }
+
+      if (waypointName) {
+        L.marker(e.point._latlng, { icon: waypointIcon, title: "" }) // Verwende das definierte Icon
+          .addTo(map)
+          .bindPopup(`<b>${waypointName}</b><br>${waypointDescription || 'Keine Beschreibung'}`)
+          .openPopup();
+      }
+    }).on('error', function () {
+      alert("Fehler beim Laden der GPX-Datei. Bitte prüfen Sie das Format.");
+    });
+
     gpxLayer.addTo(map);
   };
   reader.readAsText(file);
 }
 
-// Function to handle GeoTIFF
+
+
+// Function to handle GeoTIFF (offen)
 function handleGeoTIFF(file) {
   const reader = new FileReader();
   reader.onload = function (e) {
