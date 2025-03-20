@@ -557,17 +557,41 @@ function handleGPX(file) {
 // Function to handle GeoTIFF (offen)
 function handleGeoTIFF(file) {
   const reader = new FileReader();
-  reader.onload = function (e) {
-    parseGeoraster(e.target.result).then(georaster => {
+
+  reader.onload = async function (e) {
+    try {
+      // GeoTIFF parsen
+      const georaster = await parseGeoraster(e.target.result);
+      
+      // Sicherstellen, dass die Daten korrekt geladen wurden
+      if (!georaster || !georaster.width || !georaster.height) {
+        console.error("Ungültiges GeoTIFF");
+        return;
+      }
+
+      // GeoRasterLayer erstellen
       const layer = new GeoRasterLayer({
         georaster,
-        opacity: 0.7
+        opacity: 0.7,
+        resolution: 256 // Standardwert für bessere Darstellung
       });
+
+      // Layer zur Leaflet-Karte hinzufügen
       layer.addTo(map);
-    });
+
+      // Karte automatisch auf das GeoTIFF zoomen
+      map.fitBounds(layer.getBounds());
+      
+      console.log("GeoTIFF erfolgreich geladen");
+
+    } catch (error) {
+      console.error("Fehler beim Laden des GeoTIFF:", error);
+    }
   };
+
   reader.readAsArrayBuffer(file);
 }
+
 
 // Function to handle Image Overlay (PNG, JPG)
 function handleImageOverlay(file) {
