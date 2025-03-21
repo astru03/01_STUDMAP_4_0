@@ -19,9 +19,16 @@ window.addEventListener('resize', function () {
 //------------------------------------------------------------------------
 
 // Open the Layer Modal
-L.easyButton(`<img src="../images/Layers.svg" alt="Layer" style="width:20px;height:20px;">`, function () {
-  $('#layerModal').modal('show'); // Bootstrap function to show modal
-}).addTo(map).button.classList.add("layer-button");
+const layerButton = L.easyButton(
+  `<img src="../images/Layers.svg" alt="Layer" style="width:20px;height:20px;">`,
+  function () {
+    $('#layerModal').modal('show'); // Bootstrap function to show modal
+  }
+).addTo(map);
+
+// Tooltip hinzufügen
+layerButton.button.classList.add("layer-button");
+layerButton.button.setAttribute("title", "Layer");
 
 // Dynamically Add Categories and Subcategories
 const categories = {
@@ -245,67 +252,66 @@ $(document).ready(function () {
 // Upload-EasyButton Funktionen
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
-L.easyButton(`<img src="../images/Upload.svg" alt="Upload" style="width:20px;height:20px;">`, function () {
-  const fileInput = document.createElement('input');
-  fileInput.type = 'file';
-  fileInput.multiple = true;
-  fileInput.accept = ".shp,.shx,.prj,.dbf,.geojson,.kml,.csv,.gpx,.tif,.png,.jpg,.jpeg";
+const uploadButton = L.easyButton(
+  `<img src="../images/Upload.svg" alt="Upload" style="width:20px;height:20px;">`,
+  function () {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.multiple = true;
+    fileInput.accept = ".shp,.shx,.prj,.dbf,.geojson,.kml,.csv,.gpx,.tif";
 
-  fileInput.addEventListener('change', function (event) {
-    const files = Array.from(event.target.files);
+    fileInput.addEventListener('change', function (event) {
+      let files = Array.from(event.target.files);
 
-    // Prüfen, ob eine der ausgewählten Dateien eine Shapefile-Komponente ist
-    const containsShapefile = files.some(file => 
-      file.name.endsWith('.shp') || file.name.endsWith('.shx') || 
-      file.name.endsWith('.prj') || file.name.endsWith('.dbf')
-    );
+      const containsShapefile = files.some(file =>
+        file.name.endsWith('.shp') || file.name.endsWith('.shx') ||
+        file.name.endsWith('.prj') || file.name.endsWith('.dbf')
+      );
 
-    //wenn mindestens eine Shapefile-Datei dabei ist
-    if (containsShapefile) {
-      // Gruppiere die Shapefile-Komponenten
-      const fileGroups = groupShapefileComponents(files);
+      if (containsShapefile) {
+        const fileGroups = groupShapefileComponents(files);
 
-      // durchlaufe fileGroups
-      fileGroups.forEach(fileSet => {
-        // Überprüfen, ob alle Shapefile-Komponenten vorhanden sind
-        if (fileSet.shp && fileSet.shx && fileSet.prj && fileSet.dbf) {
-          handleShapefile(fileSet);
-        } else {
-          showErrorModal("Fehlende Dateien für Shapefile! Es werden .shp, .shx, .prj und .dbf benötigt.");
+        fileGroups.forEach(fileSet => {
+          if (fileSet.shp && fileSet.shx && fileSet.prj && fileSet.dbf) {
+            handleShapefile(fileSet);
+          } else {
+            showErrorModal("Fehlende Dateien für Shapefile! Es werden .shp, .shx, .prj und .dbf benötigt.");
+          }
+        });
+
+        files = files.filter(file =>
+          !file.name.endsWith('.shp') && !file.name.endsWith('.shx') &&
+          !file.name.endsWith('.prj') && !file.name.endsWith('.dbf')
+        );
+      }
+
+      files.forEach(file => {
+        const fileName = file.name.toLowerCase();
+        if (validateFileType(file)) {
+          if (fileName.endsWith('.geojson')) {
+            handleGeoJSON(file);
+          } else if (fileName.endsWith('.kml')) {
+            handleKML(file);
+          } else if (fileName.endsWith('.csv')) {
+            handleCSV(file);
+          } else if (fileName.endsWith('.gpx')) {
+            handleGPX(file);
+          } else if (fileName.endsWith('.tif')) {
+            handleGeoTIFF(file);
+          }
         }
       });
-
-      // Shapefile-Komponenten aus der weiteren Verarbeitung entfernen. WARUM?
-      files = files.filter(file => 
-        !file.name.endsWith('.shp') && !file.name.endsWith('.shx') && 
-        !file.name.endsWith('.prj') && !file.name.endsWith('.dbf')
-      );
-    }
-
-    // Verarbeite alle anderen Dateitypen ohne Shapefile-Überprüfung
-    files.forEach(file => {
-      const fileName = file.name.toLowerCase();
-
-      if (validateFileType(file)) {
-        if (fileName.endsWith('.geojson')) {
-          handleGeoJSON(file);
-        } else if (fileName.endsWith('.kml')) {
-          handleKML(file);
-        } else if (fileName.endsWith('.csv')) {
-          handleCSV(file);
-        } else if (fileName.endsWith('.gpx')) {
-          handleGPX(file);
-        } else if (fileName.endsWith('.tif')) {
-          handleGeoTIFF(file);
-        } else if (fileName.endsWith('.png') || fileName.endsWith('.jpg') || fileName.endsWith('.jpeg')) {
-          handleImageOverlay(file);
-        }
-      }
     });
-  });
 
-  fileInput.click();
-}).addTo(map).button.classList.add("upload-button");
+    fileInput.click();
+  }
+).addTo(map);
+
+// Tooltip hinzufügen
+uploadButton.button.classList.add("upload-button");
+uploadButton.button.setAttribute("title", "Upload");
+
+
 
 // Funktion zum Gruppieren von Shapefile-Komponenten
 function groupShapefileComponents(files) {
@@ -592,18 +598,6 @@ function handleGeoTIFF(file) {
   reader.readAsArrayBuffer(file);
 }
 
-
-// Function to handle Image Overlay (PNG, JPG)
-function handleImageOverlay(file) {
-  const reader = new FileReader();
-  reader.onload = function (e) {
-    const bounds = [[51.95, 7.58], [51.99, 7.64]]; // Example bounds, should come from user input
-    const imageOverlay = L.imageOverlay(e.target.result, bounds).addTo(map);
-    map.fitBounds(bounds);
-  };
-  reader.readAsDataURL(file);
-}
-
 // Funktion zum Anzeigen einer Fehlermeldung
 function showErrorModal(message) {
   const errorMessage = document.getElementById("errorMessage");
@@ -640,9 +634,16 @@ function validateFileType(file) {
 // NDVI-EasyButton Funktionen
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
-L.easyButton(`<img src="../images/NDVI.svg" alt="NDVI" style="width:20px;height:20px;">`, function () {
-  console.log('NDVI button clicked!');
-}).addTo(map).button.classList.add("ndvi-button");
+const ndviButton = L.easyButton(
+  `<img src="../images/NDVI.svg" alt="NDVI" style="width:20px;height:20px;">`,
+  function () {
+    console.log('NDVI button clicked!');
+  }
+).addTo(map);
+
+// Tooltip hinzufügen
+ndviButton.button.classList.add("ndvi-button");
+ndviButton.button.setAttribute("title", "NDVI");
 //------------------------------------------------------------------------
 
 
