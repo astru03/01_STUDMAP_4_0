@@ -255,55 +255,8 @@ $(document).ready(function () {
 const uploadButton = L.easyButton(
   `<img src="../images/Upload.svg" alt="Upload" style="width:20px;height:20px;">`,
   function () {
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.multiple = true;
-    fileInput.accept = ".shp,.shx,.prj,.dbf,.geojson,.kml,.csv,.gpx,.tif";
-
-    fileInput.addEventListener('change', function (event) {
-      let files = Array.from(event.target.files);
-
-      const containsShapefile = files.some(file =>
-        file.name.endsWith('.shp') || file.name.endsWith('.shx') ||
-        file.name.endsWith('.prj') || file.name.endsWith('.dbf')
-      );
-
-      if (containsShapefile) {
-        const fileGroups = groupShapefileComponents(files);
-
-        fileGroups.forEach(fileSet => {
-          if (fileSet.shp && fileSet.shx && fileSet.prj && fileSet.dbf) {
-            handleShapefile(fileSet);
-          } else {
-            showErrorModal("Fehlende Dateien für Shapefile! Es werden .shp, .shx, .prj und .dbf benötigt.");
-          }
-        });
-
-        files = files.filter(file =>
-          !file.name.endsWith('.shp') && !file.name.endsWith('.shx') &&
-          !file.name.endsWith('.prj') && !file.name.endsWith('.dbf')
-        );
-      }
-
-      files.forEach(file => {
-        const fileName = file.name.toLowerCase();
-        if (validateFileType(file)) {
-          if (fileName.endsWith('.geojson')) {
-            handleGeoJSON(file);
-          } else if (fileName.endsWith('.kml')) {
-            handleKML(file);
-          } else if (fileName.endsWith('.csv')) {
-            handleCSV(file);
-          } else if (fileName.endsWith('.gpx')) {
-            handleGPX(file);
-          } else if (fileName.endsWith('.tif')) {
-            handleGeoTIFF(file);
-          }
-        }
-      });
-    });
-
-    fileInput.click();
+    // Bootstrap-Modal anzeigen
+    $('#uploadInfoModal').modal('show');
   }
 ).addTo(map);
 
@@ -311,6 +264,61 @@ const uploadButton = L.easyButton(
 uploadButton.button.classList.add("upload-button");
 uploadButton.button.setAttribute("title", "Upload");
 
+// Event-Listener für den OK-Button im Modal
+document.getElementById("confirmUpload").addEventListener("click", function () {
+  $('#uploadInfoModal').modal('hide'); // Modal schließen
+
+  // Datei-Upload-Dialog öffnen
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.multiple = true;
+  fileInput.accept = ".shp,.shx,.prj,.dbf,.geojson,.kml,.csv,.gpx,.tif";
+
+  fileInput.addEventListener('change', function (event) {
+    let files = Array.from(event.target.files);
+
+    const containsShapefile = files.some(file =>
+      file.name.endsWith('.shp') || file.name.endsWith('.shx') ||
+      file.name.endsWith('.prj') || file.name.endsWith('.dbf')
+    );
+
+    if (containsShapefile) {
+      const fileGroups = groupShapefileComponents(files);
+
+      fileGroups.forEach(fileSet => {
+        if (fileSet.shp && fileSet.shx && fileSet.prj && fileSet.dbf) {
+          handleShapefile(fileSet);
+        } else {
+          showErrorModal("Fehlende Dateien für Shapefile! Es werden .shp, .shx, .prj und .dbf benötigt.");
+        }
+      });
+
+      files = files.filter(file =>
+        !file.name.endsWith('.shp') && !file.name.endsWith('.shx') &&
+        !file.name.endsWith('.prj') && !file.name.endsWith('.dbf')
+      );
+    }
+
+    files.forEach(file => {
+      const fileName = file.name.toLowerCase();
+      if (validateFileType(file)) {
+        if (fileName.endsWith('.geojson')) {
+          handleGeoJSON(file);
+        } else if (fileName.endsWith('.kml')) {
+          handleKML(file);
+        } else if (fileName.endsWith('.csv')) {
+          handleCSV(file);
+        } else if (fileName.endsWith('.gpx')) {
+          handleGPX(file);
+        } else if (fileName.endsWith('.tif')) {
+          handleGeoTIFF(file);
+        }
+      }
+    });
+  });
+
+  fileInput.click();
+});
 
 
 // Funktion zum Gruppieren von Shapefile-Komponenten
