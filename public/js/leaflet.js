@@ -165,79 +165,79 @@ $(document).ready(function () {
 
   $('#applyFilters').on('click', function () {
     const selectedLayers = $('.layer-checkbox:checked').map(function () {
-        return $(this).val();
+      return $(this).val();
     }).get();
     //Unterscheidung ob UAS oder OpenNRW gewählt wurde, je nach auswahl wird die URL für das WMS angepasst.
     if (selectedLayers.length === 1 && selectedCategory) {
-        const selectedLayer = selectedLayers[0];
-        let geoserverBaseUrl;
+      const selectedLayer = selectedLayers[0];
+      let geoserverBaseUrl;
 
-        if (selectedCategory === 'OpenNRW') {
-            geoserverBaseUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/OpenNRW/ows";
-        } else if (selectedCategory === 'UAS') {
-            geoserverBaseUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/ivv6mapsarcgis/ows";
-        } else {
-            alert("Ungültige Kategorie gewählt.");
+      if (selectedCategory === 'OpenNRW') {
+        geoserverBaseUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/OpenNRW/ows";
+      } else if (selectedCategory === 'UAS') {
+        geoserverBaseUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/ivv6mapsarcgis/ows";
+      } else {
+        alert("Ungültige Kategorie gewählt.");
+        return;
+      }
+
+      const wmsUrl = `${geoserverBaseUrl}?service=WMS&version=1.3.0&request=GetMap&layers=${selectedLayer}&styles=&format=image/png&transparent=true`;
+
+      if (wmsLayer) {
+        map.removeLayer(wmsLayer);
+      }
+
+      wmsLayer = L.tileLayer.wms(geoserverBaseUrl, {
+        layers: selectedLayer,
+        format: 'image/png',
+        transparent: true,
+        attribution: "&copy; OpenNRW"
+      }).addTo(map);
+
+      //setzt die WMSURL und den Namen
+      $('#wmsUrlInput').val(wmsUrl);
+      $('#wmsLayerName').text(selectedLayer);
+
+      const getCapabilitiesUrl = `http://localhost:3000/proxy?url=${encodeURIComponent("http://zdm-studmap.uni-muenster.de:8080/geoserver/ows?service=WMS&version=1.3.0&request=GetCapabilities")}`;
+
+      //hole aus den getCapabilities das entsprechende Koordinatensystem
+      $.ajax({
+        url: getCapabilitiesUrl,
+        dataType: 'xml',
+        success: function (xml) {
+          const layerElement = $(xml).find(`Layer > Layer > Name:contains(${selectedLayer})`).closest('Layer');
+          if (layerElement.length === 0) {
+            console.error("Layer nicht gefunden in GetCapabilities.");
+            alert("Layer nicht gefunden in GetCapabilities.");
             return;
+          }
+
+          const crsList = layerElement.find('CRS').map(function () {
+            return $(this).text();
+          }).get();
+
+          $('#wmsCrs').text(crsList.join(", "));
+          $('#wmsInfoModal').modal('show');
+        },
+        error: function (xhr, status, error) {
+          console.error("Fehler bei der CRS-Abfrage:", status, error);
+          alert("Fehler beim Abrufen der GetCapabilities: " + error);
+          $('#wmsInfoModal').modal('show');
         }
+      });
 
-        const wmsUrl = `${geoserverBaseUrl}?service=WMS&version=1.3.0&request=GetMap&layers=${selectedLayer}&styles=&format=image/png&transparent=true`;
-
-        if (wmsLayer) {
-            map.removeLayer(wmsLayer);
-        }
-
-        wmsLayer = L.tileLayer.wms(geoserverBaseUrl, {
-            layers: selectedLayer,
-            format: 'image/png',
-            transparent: true,
-            attribution: "&copy; OpenNRW"
-        }).addTo(map);
-
-        //setzt die WMSURL und den Namen
-        $('#wmsUrlInput').val(wmsUrl);
-        $('#wmsLayerName').text(selectedLayer);
-
-        const getCapabilitiesUrl = `http://localhost:3000/proxy?url=${encodeURIComponent("http://zdm-studmap.uni-muenster.de:8080/geoserver/ows?service=WMS&version=1.3.0&request=GetCapabilities")}`;
-
-        //hole aus den getCapabilities das entsprechende Koordinatensystem
-        $.ajax({
-            url: getCapabilitiesUrl,
-            dataType: 'xml',
-            success: function (xml) {
-                const layerElement = $(xml).find(`Layer > Layer > Name:contains(${selectedLayer})`).closest('Layer');
-                if (layerElement.length === 0) {
-                    console.error("Layer nicht gefunden in GetCapabilities.");
-                    alert("Layer nicht gefunden in GetCapabilities.");
-                    return;
-                }
-
-                const crsList = layerElement.find('CRS').map(function () {
-                    return $(this).text();
-                }).get();
-
-                $('#wmsCrs').text(crsList.join(", "));
-                $('#wmsInfoModal').modal('show');
-            },
-            error: function (xhr, status, error) {
-                console.error("Fehler bei der CRS-Abfrage:", status, error);
-                alert("Fehler beim Abrufen der GetCapabilities: " + error);
-                $('#wmsInfoModal').modal('show');
-            }
-        });
-
-        $('#layerModal').modal('hide');
+      $('#layerModal').modal('hide');
     } else {
-        alert("Bitte genau einen Layer auswählen und eine Kategorie wählen.");
+      alert("Bitte genau einen Layer auswählen und eine Kategorie wählen.");
     }
   });
 
   $('#copyWmsUrl').on('click', function () {
-      var wmsUrlInput = document.getElementById("wmsUrlInput");
-      wmsUrlInput.select();
-      wmsUrlInput.setSelectionRange(0, 99999);
-      document.execCommand("copy");
-      alert("WMS-URL wurde kopiert!");
+    var wmsUrlInput = document.getElementById("wmsUrlInput");
+    wmsUrlInput.select();
+    wmsUrlInput.setSelectionRange(0, 99999);
+    document.execCommand("copy");
+    alert("WMS-URL wurde kopiert!");
   });
 });
 
@@ -325,12 +325,14 @@ document.getElementById("confirmUpload").addEventListener("click", function () {
   fileInput.click();
 });
 
+
+//------------------------------------------------
 // Funktion zum Verarbeiten von Shapefiles (FERTIG)
 function handleShapefile(fileSet) {
-  const shpReader = new FileReader();
+  const shpReader = new FileReader(); // generiert ein FileReader-Objekt zum Lesen der .shp-Datei
 
   shpReader.onload = function (e) {
-    const shpData = e.target.result;
+    const shpData = e.target.result; // Enthält die gelesenen Daten der .shp-Datei als ArrayBuffer
 
     // Alle zugehörigen Dateien als ArrayBuffer lesen
     Promise.all([
@@ -338,7 +340,7 @@ function handleShapefile(fileSet) {
       readFileAsArrayBuffer(fileSet.dbf),
       readFileAsArrayBuffer(fileSet.prj)
     ]).then(([shxData, dbfData, prjData]) => {
-      // Verwende die shpjs-Bibliothek zur Umwandlung in GeoJSON
+      // Verwende die shpjs-Bibliothek zur Umwandlung in GeoJSON mit shpjs-Bibliothek
       shp({ shp: shpData, shx: shxData, dbf: dbfData, prj: prjData }).then(geojson => {
         const layer = L.geoJSON(geojson).addTo(map);
         map.fitBounds(layer.getBounds());
@@ -358,10 +360,10 @@ function groupShapefileComponents(files) {
 
   files.forEach(file => {
     const baseName = file.name.replace(/\.(shp|shx|prj|dbf)$/i, ''); // Entferne die Endung
-    if (!fileGroups[baseName]) {
+    if (!fileGroups[baseName]) { // Sollte der Basisname noch nicht in fileGroups existiert, wird ein neues Objekt erstellt
       fileGroups[baseName] = {};
     }
-
+    // Weist die jeweilige Datei dem entsprechenden Typ (shp, shx, prj, dbf) im Gruppenobjekt zu
     if (file.name.endsWith('.shp')) fileGroups[baseName].shp = file;
     if (file.name.endsWith('.shx')) fileGroups[baseName].shx = file;
     if (file.name.endsWith('.prj')) fileGroups[baseName].prj = file;
@@ -373,39 +375,59 @@ function groupShapefileComponents(files) {
 // Shapefile-Zusatzfunktion: Funktion zum Lesen von Dateien als ArrayBuffer
 function readFileAsArrayBuffer(file) {
   return new Promise((resolve, reject) => {
+    // Falls keine Datei übergeben wurde, wird null zurückgegeben
     if (!file) {
       resolve(null);
       return;
     }
     const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(reader.error);
-    reader.readAsArrayBuffer(file);
+    reader.onload = () => resolve(reader.result); // Wenn das Lesen erfolgreich abgeschlossen ist, wird der ArrayBuffer zurückgegeben
+    reader.onerror = () => reject(reader.error); // Falls ein Fehler beim Lesen auftritt, wird das Promise abgelehnt
+    reader.readAsArrayBuffer(file);  // Startet das Lesen der Datei als ArrayBuffer
   });
 }
+//------------------------------------------------
 
 
+//------------------------------------------------
 // Funktion zum Verarbeiten von GeoJSON (FERTIG)
 function handleGeoJSON(file) {
   const reader = new FileReader();
   // Lese die Datei ein
   reader.onload = function (e) {
     try {
+
+      const content = e.target.result.trim(); // Entfernt Leerzeichen am Anfang/Ende
+      if (!content) { // Prüfe, ob die Datei leer ist
+        throw new Error("Die Datei ist leer.");
+      }
+
       // Versuche, die Datei als GeoJSON zu parsen
       const geojson = JSON.parse(e.target.result);
 
       // Prüfe, ob das GeoJSON gültig ist
       if (geojson.type !== "FeatureCollection" || !Array.isArray(geojson.features)) {
         throw new Error("Die GeoJSON Formatierung ist nicht korrekt.");
-       }
+      }
+      // Prüfe, ob die Datei Features enthält
+      if (geojson.features.length === 0) {
+        throw new Error("Die GeoJSON-Datei enthält keine Features.");
+      }
 
       // Zulässige Geometrie-Typen
       const validGeometries = ["Point", "LineString", "Polygon", "MultiPolygon", "MultiLineString", "MultiPoint"];
 
-      // Prüfe jede Feature-Geometrie
+      // Prüfe jede Feature-Geometrie und Koordinaten
       for (const feature of geojson.features) {
         if (!feature.geometry || !validGeometries.includes(feature.geometry.type)) {
           throw new Error(`Ungültige Geometrie im GeoJSON gefunden: ${feature.geometry?.type || "undefined"}`);
+        }
+        // Prüfe, ob Koordinaten vorhanden und gültig sind
+        if (!Array.isArray(feature.geometry.coordinates)) {
+          throw new Error("Ein Feature enthält ungültige oder fehlende Koordinaten.");
+        }
+        if (!isValidCoordinate(feature.geometry.coordinates)) {
+          throw new Error(`Ein Feature enthält ungültige Koordinaten: ${JSON.stringify(feature.geometry.coordinates)}`);
         }
       }
 
@@ -427,7 +449,28 @@ function handleGeoJSON(file) {
 
   reader.readAsText(file);
 }
+// Hilfsfunktion zur Prüfung der Koordinaten
+function isValidCoordinate(coord) {
+  // Falls es sich um ein MultiPolygon handelt, überprüfe rekursiv alle Koordinaten
+  if (Array.isArray(coord[0])) {
+    return coord.every(isValidCoordinate); // rekursiver Aufruf für verschachtelte Arrays
+  }
+  
+  // Basisüberprüfung: Koordinaten müssen 2 numerische Werte sein, die im gültigen Bereich für WGS84 liegen
+  return (
+    Array.isArray(coord) &&
+    coord.length >= 2 &&
+    typeof coord[0] === "number" &&
+    typeof coord[1] === "number" &&
+    coord[0] >= -180 && coord[0] <= 180 && // Längengrad
+    coord[1] >= -90 && coord[1] <= 90     // Breitengrad
+  );
+}
 
+//------------------------------------------------
+
+
+//------------------------------------------------
 // Funktion zum Verarbeiten von KML (FERTIG)
 function handleKML(file) {
   const reader = new FileReader();
@@ -435,7 +478,7 @@ function handleKML(file) {
     const kmlText = e.target.result;
     const kmlLayer = omnivore.kml.parse(kmlText);
 
-    kmlLayer.on('ready', function() {
+    kmlLayer.on('ready', function () {
       map.fitBounds(kmlLayer.getBounds()); // Karte zoomt auf das KML-Gebiet
     });
 
@@ -443,8 +486,10 @@ function handleKML(file) {
   };
   reader.readAsText(file);
 }
+//------------------------------------------------
 
 
+//------------------------------------------------
 // Funktion zum Verarbeiten von CSV mit Punkten, Linien & Polygonen (nochmal überarbeiten)
 function handleCSV(file) {
   const reader = new FileReader();
@@ -493,7 +538,6 @@ function handleCSV(file) {
   };
   reader.readAsText(file);
 }
-
 // CSV-Zusatzfunktion: Funktion zum Parsen von WKT (Well-Known Text)
 function parseWKT(wkt) {
   return wkt.match(/[-+]?\d*\.\d+ [-+]?\d+\.\d+/g).map(coord => {
@@ -501,13 +545,14 @@ function parseWKT(wkt) {
     return [lat, lon]; // Leaflet braucht [lat, lon] statt [lon, lat]
   });
 }
-
 // CSV-Zusatzfunktion: Funktion zum sicheren Parsen einer CSV-Zeile
 function splitCSVLine(line) {
   return line.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g)?.map(value => value.replace(/^"|"$/g, '')) || [];
 }
+//------------------------------------------------
 
 
+//------------------------------------------------
 // Funktion zum Verarbeiten von GPX (FERTIG)
 function handleGPX(file) {
   const reader = new FileReader();
@@ -541,7 +586,7 @@ function handleGPX(file) {
       }
     }).on('loaded', function (e) {
       map.fitBounds(e.target.getBounds());
-      
+
     }).on('addpoint', function (e) {
       console.log("Waypoint hinzugefügt:", e.point);
       // Extrahiere den Namen aus e.point.options.title
@@ -549,7 +594,7 @@ function handleGPX(file) {
 
       let waypointDescription = '';
       if (e.point._popup && e.point._popup._content) {
-          waypointDescription = e.point._popup._content.replace(/<[^>]*>?/gm, ''); // Entferne HTML-Tags
+        waypointDescription = e.point._popup._content.replace(/<[^>]*>?/gm, ''); // Entferne HTML-Tags
       }
 
       if (waypointName) {
@@ -566,8 +611,10 @@ function handleGPX(file) {
   };
   reader.readAsText(file);
 }
+//------------------------------------------------
 
 
+//------------------------------------------------
 // Funktion zum Verarbeiten von GeoTIFF (FERTIG)
 function handleGeoTIFF(file) {
   const reader = new FileReader();
@@ -576,7 +623,7 @@ function handleGeoTIFF(file) {
     try {
       // GeoTIFF parsen
       const georaster = await parseGeoraster(e.target.result);
-      
+
       // Sicherstellen, dass die Daten korrekt geladen wurden
       if (!georaster || !georaster.width || !georaster.height) {
         console.error("Ungültiges GeoTIFF");
@@ -595,7 +642,7 @@ function handleGeoTIFF(file) {
 
       // Karte automatisch auf das GeoTIFF zoomen
       map.fitBounds(layer.getBounds());
-      
+
       console.log("GeoTIFF erfolgreich geladen");
 
     } catch (error) {
@@ -605,9 +652,10 @@ function handleGeoTIFF(file) {
 
   reader.readAsArrayBuffer(file);
 }
+//------------------------------------------------
 
 
-
+//------------------------------------------------
 // Globale Variable für die Fehlermeldung Modal-Instanz
 let errorModalInstance = null;
 
@@ -642,6 +690,7 @@ function validateFileType(file) {
   }
   return true;
 }
+//------------------------------------------------------------------------
 //------------------------------------------------------------------------
 
 
