@@ -255,24 +255,23 @@ $(document).ready(function () {
 const uploadButton = L.easyButton(
   `<img src="../images/Upload.svg" alt="Upload" style="width:20px;height:20px;">`,
   function () {
-    // Bootstrap-Modal anzeigen. Popupfenster, welche Datenformate untersützt werden
-    $('#uploadInfoModal').modal('show');
+    $('#uploadInfoModal').modal('show'); // Öffnet das Popupfenster. Zeigt welche Datenformate untersützt werden.
   }
 ).addTo(map);
 
-// Tooltip hinzufügen
+// Tooltip für den Upload-Button
 uploadButton.button.classList.add("upload-button");
 uploadButton.button.setAttribute("title", "Upload");
 
-// Event-Listener für den OK-Button im Modal
+// Event-Listener für den OK-Button
 document.getElementById("confirmUpload").addEventListener("click", function () {
-  $('#uploadInfoModal').modal('hide'); // Modal schließen
+  $('#uploadInfoModal').modal('hide'); // Popup fenster schließen
 
   // Datei-Upload-Dialog öffnen
   const fileInput = document.createElement('input');
   fileInput.type = 'file';
-  fileInput.multiple = true;
-  fileInput.accept = ".shp,.shx,.prj,.dbf,.geojson,.kml,.csv,.gpx,.tif";
+  fileInput.multiple = true; // mehrere Daten können gleichzeitig ausgewählt werden
+  fileInput.accept = ".shp,.shx,.prj,.dbf,.geojson,.kml,.csv,.gpx,.tif"; // Diese Formate zum temporären hochladen werden unterstützt
 
   fileInput.addEventListener('change', function (event) {
     let files = Array.from(event.target.files);
@@ -602,12 +601,20 @@ function handleGeoTIFF(file) {
 }
 
 
+
+// Globale Variable für die Fehlermeldung Modal-Instanz
+let errorModalInstance = null;
+
 // Funktion zum Anzeigen einer Fehlermeldung
 function showErrorModal(message) {
   const errorMessage = document.getElementById("errorMessage");
   errorMessage.textContent = message;
-  const errorModal = new bootstrap.Modal(document.getElementById("errorModal"));
-  errorModal.show();
+  // Stelle sicher, dass die Modal-Instanz nur einmal erstellt wird
+  if (!errorModalInstance) {
+    const errorModalElement = document.getElementById("errorModal");
+    errorModalInstance = new bootstrap.Modal(errorModalElement);
+  }
+  errorModalInstance.show();
 }
 
 // Funktion zur Validierung von Dateitypen

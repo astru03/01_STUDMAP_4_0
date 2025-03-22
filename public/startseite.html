@@ -89,7 +89,9 @@
     <div id="map" style="height: 100vh; width: 100%;"></div>
   </main>
 
+  <!--------------------------->
   <!-- Layer Selection Popup -->
+  <!--------------------------->
   <div class="modal fade" id="layerModal" tabindex="-1" aria-labelledby="layerModalLabel" aria-hidden="true"
     data-bs-backdrop="false">
     <div class="modal-dialog modal-md" style="position: absolute; top: 10%; left: 5%;">
@@ -112,39 +114,35 @@
     </div>
   </div>
 
+  <!--------------------------->
   <!-- Upload Selection Modal -->
-<!-- Upload Selection Modal -->
-<!-- Upload Selection Modal -->
-<div class="modal fade" id="uploadInfoModal" tabindex="-1" aria-labelledby="uploadInfoLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-md">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h6 class="modal-title" id="uploadInfoLabel">Temporärer Upload</h6>
-      </div>
-      <div class="modal-body">
-        <p><b>Unterstützte Formate:</b></p>
-        <ul>
-          <li>.geojson</li>
-          <li>.shp, .shx, .prj, .dbf</li>
-          <li>.kml</li>
-          <li>.csv</li>
-          <li>.gpx</li>
-          <li>.tif</li>
-        </ul>
-        <p class="text-muted">
-          Weitere Informationen finden Sie in der <a href="dokumentation.html" class="text-primary">Dokumentation</a>.
-        </p>
-      </div>
-      <div class="modal-footer justify-content-center">
-        <button type="button" class="btn btn-primary" id="confirmUpload">OK</button>
+  <!--------------------------->
+  <div class="modal fade" id="uploadInfoModal" tabindex="-1" aria-labelledby="uploadInfoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-md">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h6 class="modal-title" id="uploadInfoLabel">Temporärer Upload</h6>
+        </div>
+        <div class="modal-body">
+          <p><b>Unterstützte Formate:</b></p>
+          <ul>
+            <li>.shp, .shx, .prj, .dbf</li>
+            <li>.geojson</li>
+            <li>.kml</li>
+            <li>.csv</li>
+            <li>.gpx</li>
+            <li>.tif</li>
+          </ul>
+          <p class="text-muted">
+            Weitere Informationen finden Sie in der <a href="dokumentation.html" class="text-primary">Dokumentation</a>.
+          </p>
+        </div>
+        <div class="modal-footer justify-content-center">
+          <button type="button" class="btn btn-primary" id="confirmUpload">OK</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
-
-
-
-  <!-- NDVI Selection Modal -->
 
   <!-- generisches Bootstrap-Modal für Fehlermeldungs-Popup -->
   <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
@@ -164,6 +162,14 @@
       </div>
     </div>
   </div>
+
+  <!--------------------------->
+  <!-- NDVI Selection Modal -->
+  <!--------------------------->
+
+
+
+
 
   <!-- Utilities -->
   <link rel="stylesheet" type="text/css" href="/css/startseite.css">
