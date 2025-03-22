@@ -273,17 +273,21 @@ document.getElementById("confirmUpload").addEventListener("click", function () {
   fileInput.multiple = true; // mehrere Daten können gleichzeitig ausgewählt werden
   fileInput.accept = ".shp,.shx,.prj,.dbf,.geojson,.kml,.csv,.gpx,.tif"; // Diese Formate zum temporären hochladen werden unterstützt
 
+  // Event-Listener für das Hochladen von Dateien
   fileInput.addEventListener('change', function (event) {
-    let files = Array.from(event.target.files);
+    let files = Array.from(event.target.files); // Setzt die hochgeladenen Dateien in ein Array
 
+    //Prüft, ob eine Shape-Datei enthalten ist
     const containsShapefile = files.some(file =>
       file.name.endsWith('.shp') || file.name.endsWith('.shx') ||
       file.name.endsWith('.prj') || file.name.endsWith('.dbf')
     );
 
+    // Wenn Shape-Datei enthalten, dann werden diese gruppiert.
     if (containsShapefile) {
       const fileGroups = groupShapefileComponents(files);
 
+      // Prüft, ob für das Anzeigen einer Shape-Datei alle benötigten Shapefile-Komponenten vorhanden sind
       fileGroups.forEach(fileSet => {
         if (fileSet.shp && fileSet.shx && fileSet.prj && fileSet.dbf) {
           handleShapefile(fileSet);
@@ -292,15 +296,17 @@ document.getElementById("confirmUpload").addEventListener("click", function () {
         }
       });
 
+      // Verarbeitete Shape-Datein werden aus der Liste entfernt, damit doppelte Verarbeitung verhindert wird
       files = files.filter(file =>
         !file.name.endsWith('.shp') && !file.name.endsWith('.shx') &&
         !file.name.endsWith('.prj') && !file.name.endsWith('.dbf')
       );
     }
 
+    // restliche Datenformate werden verarbeitet
     files.forEach(file => {
       const fileName = file.name.toLowerCase();
-      if (validateFileType(file)) {
+      if (validateFileType(file)) { // Prüft, ob das Dateiformat gültig ist
         if (fileName.endsWith('.geojson')) {
           handleGeoJSON(file);
         } else if (fileName.endsWith('.kml')) {
@@ -619,9 +625,10 @@ function showErrorModal(message) {
 
 // Funktion zur Validierung von Dateitypen
 function validateFileType(file) {
-  const validExtensions = [".geojson", ".kml", ".csv", ".gpx", ".tif", ".png", ".jpg", ".jpeg"];
+  const validExtensions = [".geojson", ".kml", ".csv", ".gpx", ".tif"];
 
-  // Shapefile-Komponenten nicht blockieren
+  // Wenn eine Shapefile-Komponenten über validateFileType ankommt, wird diese nicht blockiert.
+  // sorgt dafür, dass Shapefile-Komponenten nicht fälschlicherweise als ungültig gewertet werden.
   if (file.name.endsWith(".shp") || file.name.endsWith(".shx") || file.name.endsWith(".prj") || file.name.endsWith(".dbf")) {
     return true;
   }
