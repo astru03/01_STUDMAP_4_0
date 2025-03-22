@@ -255,7 +255,7 @@ $(document).ready(function () {
 const uploadButton = L.easyButton(
   `<img src="../images/Upload.svg" alt="Upload" style="width:20px;height:20px;">`,
   function () {
-    // Bootstrap-Modal anzeigen
+    // Bootstrap-Modal anzeigen. Popupfenster, welche Datenformate untersützt werden
     $('#uploadInfoModal').modal('show');
   }
 ).addTo(map);
@@ -320,26 +320,6 @@ document.getElementById("confirmUpload").addEventListener("click", function () {
   fileInput.click();
 });
 
-
-// Funktion zum Gruppieren von Shapefile-Komponenten
-function groupShapefileComponents(files) {
-  let fileGroups = {};
-
-  files.forEach(file => {
-    const baseName = file.name.replace(/\.(shp|shx|prj|dbf)$/i, ''); // Entferne die Endung
-    if (!fileGroups[baseName]) {
-      fileGroups[baseName] = {};
-    }
-
-    if (file.name.endsWith('.shp')) fileGroups[baseName].shp = file;
-    if (file.name.endsWith('.shx')) fileGroups[baseName].shx = file;
-    if (file.name.endsWith('.prj')) fileGroups[baseName].prj = file;
-    if (file.name.endsWith('.dbf')) fileGroups[baseName].dbf = file;
-  });
-
-  return Object.values(fileGroups);
-}
-
 // Funktion zum Verarbeiten von Shapefiles (FERTIG)
 function handleShapefile(fileSet) {
   const shpReader = new FileReader();
@@ -367,9 +347,25 @@ function handleShapefile(fileSet) {
 
   shpReader.readAsArrayBuffer(fileSet.shp);
 }
+// Shapefile-Zusatzfunktion: Funktion zum Gruppieren von Shapefile-Komponenten
+function groupShapefileComponents(files) {
+  let fileGroups = {};
 
+  files.forEach(file => {
+    const baseName = file.name.replace(/\.(shp|shx|prj|dbf)$/i, ''); // Entferne die Endung
+    if (!fileGroups[baseName]) {
+      fileGroups[baseName] = {};
+    }
 
-// shp-Zusatzfunktion: Funktion zum Lesen von Dateien als ArrayBuffer
+    if (file.name.endsWith('.shp')) fileGroups[baseName].shp = file;
+    if (file.name.endsWith('.shx')) fileGroups[baseName].shx = file;
+    if (file.name.endsWith('.prj')) fileGroups[baseName].prj = file;
+    if (file.name.endsWith('.dbf')) fileGroups[baseName].dbf = file;
+  });
+
+  return Object.values(fileGroups);
+}
+// Shapefile-Zusatzfunktion: Funktion zum Lesen von Dateien als ArrayBuffer
 function readFileAsArrayBuffer(file) {
   return new Promise((resolve, reject) => {
     if (!file) {
@@ -383,7 +379,8 @@ function readFileAsArrayBuffer(file) {
   });
 }
 
-// Function to handle GeoJSON (FERTIG)
+
+// Funktion zum Verarbeiten von GeoJSON (FERTIG)
 function handleGeoJSON(file) {
   const reader = new FileReader();
   // Lese die Datei ein
@@ -426,7 +423,7 @@ function handleGeoJSON(file) {
   reader.readAsText(file);
 }
 
-// Funktion zum Laden von KML-Dateien in Leaflet (FERTIG)
+// Funktion zum Verarbeiten von KML (FERTIG)
 function handleKML(file) {
   const reader = new FileReader();
   reader.onload = function (e) {
@@ -442,8 +439,8 @@ function handleKML(file) {
   reader.readAsText(file);
 }
 
-// Function to handle CSV (nochmal überarbeiten)
-// Funktion zum Laden von CSV mit Punkten, Linien & Polygonen
+
+// Funktion zum Verarbeiten von CSV mit Punkten, Linien & Polygonen (nochmal überarbeiten)
 function handleCSV(file) {
   const reader = new FileReader();
   reader.onload = function (e) {
@@ -492,7 +489,7 @@ function handleCSV(file) {
   reader.readAsText(file);
 }
 
-// csv-Zusatzfunktion: Funktion zum Parsen von WKT (Well-Known Text)
+// CSV-Zusatzfunktion: Funktion zum Parsen von WKT (Well-Known Text)
 function parseWKT(wkt) {
   return wkt.match(/[-+]?\d*\.\d+ [-+]?\d+\.\d+/g).map(coord => {
     const [lon, lat] = coord.split(' ').map(Number);
@@ -500,14 +497,13 @@ function parseWKT(wkt) {
   });
 }
 
-// csv-Zusatzfunktion: Funktion zum sicheren Parsen einer CSV-Zeile
+// CSV-Zusatzfunktion: Funktion zum sicheren Parsen einer CSV-Zeile
 function splitCSVLine(line) {
   return line.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g)?.map(value => value.replace(/^"|"$/g, '')) || [];
 }
 
 
-
-// Function to handle GPX (FERTIG)
+// Funktion zum Verarbeiten von GPX (FERTIG)
 function handleGPX(file) {
   const reader = new FileReader();
   reader.onload = function (e) {
@@ -567,8 +563,7 @@ function handleGPX(file) {
 }
 
 
-
-// Function to handle GeoTIFF (offen)
+// Funktion zum Verarbeiten von GeoTIFF (FERTIG)
 function handleGeoTIFF(file) {
   const reader = new FileReader();
 
@@ -605,6 +600,7 @@ function handleGeoTIFF(file) {
 
   reader.readAsArrayBuffer(file);
 }
+
 
 // Funktion zum Anzeigen einer Fehlermeldung
 function showErrorModal(message) {
