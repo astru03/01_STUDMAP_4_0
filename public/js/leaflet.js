@@ -490,64 +490,99 @@ function handleKML(file) {
 
 
 //------------------------------------------------
-// Funktion zum Verarbeiten von CSV mit Punkten, Linien & Polygonen (nochmal überarbeiten)
+// Funktion zum Verarbeiten von CSV mit Punkten, Linien & Polygonen (FERTIG)
 function handleCSV(file) {
-  const reader = new FileReader();
+  const reader = new FileReader(); // Erstellen eines FileReader-Objekts, um die Datei zu lesen
+
   reader.onload = function (e) {
-    const lines = e.target.result.split('\n');
-    const header = splitCSVLine(lines[0]); // Verbesserte Split-Funktion
+    const lines = e.target.result.split('\n'); // CSV-Datei in Zeilen aufteilen
+    const header = splitCSVLine(lines[0]); // Erste Zeile (Header) mit der splitCSVLine-Funktion in Spalten aufteilen
+
+    // Indizes der verschiedenen Spalten anhand des Headers selektieren
     const nameIndex = header.indexOf('name');
     const latIndex = header.indexOf('lat');
     const lonIndex = header.indexOf('lon');
     const geomIndex = header.indexOf('geometry');
 
-    if (nameIndex === -1 || geomIndex === -1) {
-      alert('CSV file must contain name and geometry columns.');
+    // Überprüfen, ob alle erforderlichen Spalten vorhanden sind
+    if (nameIndex === -1 || latIndex === -1 || lonIndex === -1 || geomIndex === -1) {
+      showErrorModal('Die CSV-Datei muss die Spalten "name", "geometry", "lat" und "lon" enthalten.');
       return;
     }
 
-    const features = [];
-    lines.slice(1).forEach(line => {
-      if (!line.trim()) return; // Überspringt leere Zeilen
+    const features = []; // Array, um die gezeichneten Features (Marker, Polylinien, Polygone) zu speichern
 
-      const values = splitCSVLine(line); // Korrektes Parsen der Zeile
-      const name = values[nameIndex] || "Unbenannt";
-      const lat = parseFloat(values[latIndex]);
-      const lon = parseFloat(values[lonIndex]);
-      const geometry = values[geomIndex] ? values[geomIndex].trim() : "";
+    for (let i = 1; i < lines.length; i++) {  // Durchlauf jeder Zeile der CSV-Datei. Beginn ab der zweiten Zeile
+      let line = lines[i];
+      if (!line.trim()) continue; // Überspringe leere Zeilen
 
-      if (!isNaN(lat) && !isNaN(lon) && geometry === "") {
-        // 🟢 Punkt erstellen
-        features.push(L.marker([lat, lon]).bindPopup(name));
-      } else if (geometry.startsWith("LINESTRING")) {
-        // 🔵 Linie parsen
-        const coords = parseWKT(geometry);
-        features.push(L.polyline(coords, { color: 'blue' }).bindPopup(name));
-      } else if (geometry.startsWith("POLYGON")) {
-        // 🟢 Polygon parsen
-        const coords = parseWKT(geometry);
-        features.push(L.polygon(coords, { color: 'green' }).bindPopup(name));
+      const values = splitCSVLine(line); // Teile die Zeile in Spalten auf mit der splitCSVLine-Funktion
+      
+      // Extrahiere die Werte für "name", "lat", "lon" und "geometry" aus der Zeile
+      const name = values[nameIndex] || "Unbenannt"; // Wenn "name" fehlt, setze es auf "Unbenannt"
+      const lat = values[latIndex] ? parseFloat(values[latIndex]) : NaN; // "lat" als Zahl zu parsen
+      const lon = values[lonIndex] ? parseFloat(values[lonIndex]) : NaN; // "lon" als Zahl zu parsen
+      const geometry = values[geomIndex] ? values[geomIndex].trim() : ""; // Extrahiere "geometry" und entferne unnötige Leerzeichen
+
+      
+      if (!isNaN(lat) && !isNaN(lon) && geometry === "") { // Wenn lat und lon vorhanden sind, aber geometry leer ist, füge einen Marker hinzu
+        features.push(L.marker([lat, lon]).bindPopup(name)); // Marker mit Popup hinzufügen
+      } else if (geometry.startsWith("LINESTRING")) { // Wenn geometry ein "LINESTRING" ist, erstelle eine Polyline
+        const coords = parseWKT(geometry); // Parse die Koordinaten aus dem WKT (Well-Known Text) Format
+        features.push(L.polyline(coords, { color: 'blue' }).bindPopup(name)); // Polyline mit Popup hinzufügen
+      } else if (geometry.startsWith("POLYGON")) { // Wenn geometry ein "POLYGON" ist, erstelle ein Polygon
+        const coords = parseWKT(geometry); // Parse die Koordinaten aus dem WKT
+        features.push(L.polygon(coords, { color: 'green' }).bindPopup(name)); // Polygon mit Popup hinzufügen
+      } else {
+        // Wenn keine gültige Geometrie gefunden wird, überspringe die Zeile
+        console.warn(`Skipping invalid line ${i}: ${line}`);
       }
-    });
+    }
 
+    // Wenn Features hinzugefügt wurden, füge sie der Karte hinzu
     if (features.length > 0) {
-      L.featureGroup(features).addTo(map);
+      L.featureGroup(features).addTo(map); // Alle Features (Marker, Polylinien, Polygone) zur Karte hinzufügen
     } else {
-      alert('No valid geometries found in the CSV file.');
+      showErrorModal('Es wurden keine gültigen Geometrien in der CSV-Datei gefunden.');
     }
   };
   reader.readAsText(file);
 }
+
 // CSV-Zusatzfunktion: Funktion zum Parsen von WKT (Well-Known Text)
 function parseWKT(wkt) {
   return wkt.match(/[-+]?\d*\.\d+ [-+]?\d+\.\d+/g).map(coord => {
-    const [lon, lat] = coord.split(' ').map(Number);
-    return [lat, lon]; // Leaflet braucht [lat, lon] statt [lon, lat]
+    const [lon, lat] = coord.split(' ').map(Number); // WKT hat Koordinaten als "lon lat", Leaflet erwartet "lat, lon"
+    return [lat, lon]; // Rückgabe in Leaflet-kompatible Reihenfolge [lat, lon]
   });
 }
 // CSV-Zusatzfunktion: Funktion zum sicheren Parsen einer CSV-Zeile
 function splitCSVLine(line) {
-  return line.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g)?.map(value => value.replace(/^"|"$/g, '')) || [];
+  const values = [];
+  let current = "";
+  let inQuotes = false;
+
+  // Gehe jedes Zeichen der Zeile durch und überprüfe, ob es sich um ein Komma handelt, das nicht in Anführungszeichen steht
+  for (let i = 0; i < line.length; i++) { 
+    const char = line[i];
+
+    // Umschalten des inQuotes-Flags, wenn ein Anführungszeichen gefunden wird
+    if (char === '"' && (i === 0 || line[i - 1] !== "\\")) {
+      inQuotes = !inQuotes;
+    // Wenn ein Komma gefunden wird und wir nicht in Anführungszeichen sind, teile die Zeile
+    } else if (char === "," && !inQuotes) {
+      values.push(current.trim()); // Füge den aktuellen Wert hinzu
+      current = ""; // Setze den aktuellen Wert zurück
+    } else {
+      current += char; // Ansonsten füge das Zeichen zum aktuellen Wert hinzu
+    }
+  }
+  values.push(current.trim()); // Letztes Element hinzufügen
+  // Falls weniger als 4 Spalten, ergänze leere Strings
+  while (values.length < 4) {
+    values.push("");
+  }
+  return values;
 }
 //------------------------------------------------
 
