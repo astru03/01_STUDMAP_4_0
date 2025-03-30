@@ -199,6 +199,7 @@ $(document).ready(function () {
       $('#wmsLayerName').text(selectedLayer);
 
       const getCapabilitiesUrl = `http://localhost:3000/proxy?url=${encodeURIComponent("http://zdm-studmap.uni-muenster.de:8080/geoserver/ows?service=WMS&version=1.3.0&request=GetCapabilities")}`;
+      //const getCapabilitiesUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/ows?service=WMS&version=1.3.0&request=GetCapabilities";
 
       //hole aus den getCapabilities das entsprechende Koordinatensystem
       $.ajax({
@@ -211,6 +212,10 @@ $(document).ready(function () {
             alert("Layer nicht gefunden in GetCapabilities.");
             return;
           }
+
+          const abstractText = layerElement.find('Abstract').text() || "Keine Beschreibung verfügbar.";
+          $('#wmsAbstract').text(abstractText);
+
 
           const crsList = layerElement.find('CRS').map(function () {
             return $(this).text();
