@@ -1,5 +1,12 @@
 // create a variable for the map
-var map = L.map('map').setView([51.975, 7.61], 12);
+var map = L.map('map', {
+  zoomControl: false
+}).setView([51.975, 7.61], 12);
+
+// Zoom-Control manuell hinzufügen – oben rechts
+L.control.zoom({
+  position: 'topright'
+}).addTo(map);
 
 // add the base map
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -24,7 +31,7 @@ const layerButton = L.easyButton(
   function () {
     $('#layerModal').modal('show'); // Bootstrap function to show modal
   }
-).addTo(map);
+).addTo(map);a
 
 // Tooltip hinzufügen
 layerButton.button.classList.add("layer-button");

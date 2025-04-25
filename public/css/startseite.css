@@ -128,22 +128,27 @@ main {
     /* Leaflet-Zoom-Button verschieben */
     .leaflet-control-zoom {
       position: absolute;
-      top: 70px !important;
-    }
-    /* Position der NDVI-Button */
-    .ndvi-button {
-      position: absolute;
-      top: 200px;
+      top: 70px;
+      right: 10px;
+      left: auto;
     }
     /* Position der Layer-Button */
     .layer-button {
       position: absolute;
-      top: 140px;
+      top: 70px;
+      left: auto;
     }
     /* Position der Upload-Button */
     .upload-button {
       position: absolute;
-      top: 170px;
+      top: 100px;
+      left: auto;
+    }
+    /* Position der NDVI-Button */
+    .ndvi-button {
+      position: absolute;
+      top: 130px;
+      left: auto;
     }
 }
 
@@ -154,22 +159,27 @@ main {
   /* Leaflet-Zoom-Button verschieben */
   .leaflet-control-zoom {
     position: absolute;
-    top: 70px !important;
-  }
-  /* Position der NDVI-Button */
-  .ndvi-button {
-    position: absolute;
-    top: 200px;
+    top: 70px;
+    right: 10px;
+    left: auto;
   }
   /* Position der Layer-Button */
   .layer-button {
     position: absolute;
-    top: 140px;
+    top: 70px;
+    left: auto;
   }
   /* Position der Upload-Button */
   .upload-button {
     position: absolute;
-    top: 170px;
+    top: 100px;
+    left: auto;
+  }
+  /* Position der NDVI-Button */
+  .ndvi-button {
+    position: absolute;
+    top: 130px;
+    left: auto;
   }
 }
 
@@ -178,25 +188,27 @@ main {
   /* Leaflet-Zoom-Button verschieben */
   .leaflet-control-zoom {
     position: absolute;
-    top: 70px !important;
+    top: 70px;
+    right: 10px;
+    left: auto;
   }
-
-  /* Position der NDVI-Button */
-  .ndvi-button {
-    position: absolute;
-    top: 200px;
-  }
-
   /* Position der Layer-Button */
   .layer-button {
     position: absolute;
-    top: 140px;
+    top: 70px;
+    left: auto;
   }
-
   /* Position der Upload-Button */
   .upload-button {
     position: absolute;
-    top: 170px;
+    top: 100px;
+    left: auto;
+  }
+  /* Position der NDVI-Button */
+  .ndvi-button {
+    position: absolute;
+    top: 130px;
+    left: auto;
   }
 }
 
@@ -204,21 +216,26 @@ main {
   /* Leaflet-Zoom-Button verschieben */
   .leaflet-control-zoom {
     position: absolute;
-    top: 70px !important;
-  }
-  /* Position der NDVI-Button */
-  .ndvi-button {
-    position: absolute;
-    top: 200px;
+    top: 70px;
+    right: 10px;
+    left: auto;
   }
   /* Position der Layer-Button */
   .layer-button {
     position: absolute;
-    top: 140px;
+    top: 70px;
+    left: auto;
   }
   /* Position der Upload-Button */
   .upload-button {
     position: absolute;
-    top: 170px;
+    top: 100px;
+    left: auto;
+  }  
+  /* Position der NDVI-Button */
+  .ndvi-button {
+    position: absolute;
+    top: 130px;
+    left: auto;
   }
 }
