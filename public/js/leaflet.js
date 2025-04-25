@@ -31,7 +31,7 @@ const layerButton = L.easyButton(
   function () {
     $('#layerModal').modal('show'); // Bootstrap function to show modal
   }
-).addTo(map);a
+).addTo(map);
 
 // Tooltip hinzufügen
 layerButton.button.classList.add("layer-button");
