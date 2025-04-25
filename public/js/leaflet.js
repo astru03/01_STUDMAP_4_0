@@ -37,6 +37,9 @@ const layerButton = L.easyButton(
 layerButton.button.classList.add("layer-button");
 layerButton.button.setAttribute("title", "Layer");
 
+// Container-Klasse hinzufügen
+layerButton._container.classList.add("layer-button-container");
+
 // Dynamically Add Categories and Subcategories
 const categories = {
   'UAS': {
@@ -279,6 +282,9 @@ const uploadButton = L.easyButton(
 // Tooltip für den Upload-Button
 uploadButton.button.classList.add("upload-button");
 uploadButton.button.setAttribute("title", "Upload");
+
+// Container-Klasse hinzufügen
+uploadButton._container.classList.add("upload-button-container");
 
 // Event-Listener für den OK-Button
 document.getElementById("confirmUpload").addEventListener("click", function () {
@@ -763,6 +769,9 @@ const ndviButton = L.easyButton(
 // Tooltip hinzufügen
 ndviButton.button.classList.add("ndvi-button");
 ndviButton.button.setAttribute("title", "NDVI");
+
+// Container-Klasse hinzufügen
+ndviButton._container.classList.add("ndvi-button-container");
 //------------------------------------------------------------------------
 
 
@@ -780,15 +789,15 @@ $(document).ready(function () {
     if (isNavbarExpanded) {
       console.log('Navbar expanded or small screen size.');
       $('.leaflet-control-zoom').css('cssText', 'top: 220px !important;');
-      $('.layer-button').css('cssText', 'top: 290px !important;');
-      $('.upload-button').css('cssText', 'top: 320px !important;');
-      $('.ndvi-button').css('cssText', 'top: 350px !important;');
+      $('.layer-button-container').css('cssText', 'top: 220px !important;');
+      $('.upload-button-container').css('cssText', 'top: 260px !important;');
+      $('.ndvi-button-container').css('cssText', 'top: 300px !important;');
     } else {
       console.log('Navbar collapsed or larger screen size.');
       $('.leaflet-control-zoom').css('cssText', 'top: 70px !important;');
-      $('.layer-button').css('cssText', 'top: 140px !important;');
-      $('.upload-button').css('cssText', 'top: 170px !important;');
-      $('.ndvi-button').css('cssText', 'top: 200px !important;');
+      $('.layer-button-container').css('cssText', 'top: 70px !important;');
+      $('.upload-button-container').css('cssText', 'top: 110px !important;');
+      $('.ndvi-button-container').css('cssText', 'top: 150px !important;');
     }
   }
 

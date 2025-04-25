@@ -121,121 +121,67 @@ main {
 
 /*------------------------------------------------------------------------*/
 /* Define breakpoints for different screen sizes */
-@media (max-width: 2560px) {
-  h1 {
-    font-size: 2.5rem;
-  }
-    /* Leaflet-Zoom-Button verschieben */
-    .leaflet-control-zoom {
-      position: absolute;
-      top: 70px;
-      right: 10px;
-      left: auto;
-    }
-    /* Position der Layer-Button */
-    .layer-button {
-      position: absolute;
-      top: 70px;
-      left: auto;
-    }
-    /* Position der Upload-Button */
-    .upload-button {
-      position: absolute;
-      top: 100px;
-      left: auto;
-    }
-    /* Position der NDVI-Button */
-    .ndvi-button {
-      position: absolute;
-      top: 130px;
-      left: auto;
-    }
+.leaflet-control-zoom {
+  position: absolute;
+  top: 70px;
+  right: 10px;
+  left: auto;
+  transition: top 0.3s ease;
+}
+.layer-button-container,
+.upload-button-container,
+.ndvi-button-container {
+  position: absolute;
+  top: 70px;
+  left: 10px;
+  transition: top 0.3s ease; /* For smooth transition when position changes */
 }
 
-@media (max-width: 1200px) {
-  h1 {
-    font-size: 2rem;
-  }
-  /* Leaflet-Zoom-Button verschieben */
-  .leaflet-control-zoom {
-    position: absolute;
-    top: 70px;
-    right: 10px;
-    left: auto;
-  }
-  /* Position der Layer-Button */
-  .layer-button {
-    position: absolute;
-    top: 70px;
-    left: auto;
-  }
-  /* Position der Upload-Button */
-  .upload-button {
-    position: absolute;
-    top: 100px;
-    left: auto;
-  }
-  /* Position der NDVI-Button */
-  .ndvi-button {
-    position: absolute;
-    top: 130px;
-    left: auto;
-  }
+/* Default positions for larger screens */
+.layer-button-container {
+  top: 70px;
+}
+.upload-button-container {
+  top: 110px;
+}
+.ndvi-button-container {
+  top: 150px;
 }
 
+
+/* Adjust positions when the navbar toggles (on mobile) */
 @media (max-width: 992px) {
-
-  /* Leaflet-Zoom-Button verschieben */
-  .leaflet-control-zoom {
-    position: absolute;
-    top: 70px;
-    right: 10px;
-    left: auto;
+  .layer-button-container {
+    top: 180px;
   }
-  /* Position der Layer-Button */
-  .layer-button {
-    position: absolute;
-    top: 70px;
-    left: auto;
+  .upload-button-container {
+    top: 220px;
   }
-  /* Position der Upload-Button */
-  .upload-button {
-    position: absolute;
-    top: 100px;
-    left: auto;
-  }
-  /* Position der NDVI-Button */
-  .ndvi-button {
-    position: absolute;
-    top: 130px;
-    left: auto;
+  .ndvi-button-container {
+    top: 260px;
   }
 }
 
 @media (max-width: 768px) {
-  /* Leaflet-Zoom-Button verschieben */
-  .leaflet-control-zoom {
-    position: absolute;
-    top: 70px;
-    right: 10px;
-    left: auto;
+  .layer-button-container {
+    top: 180px; /* Adjusted for small screens */
   }
-  /* Position der Layer-Button */
-  .layer-button {
-    position: absolute;
-    top: 70px;
-    left: auto;
+  .upload-button-container {
+    top: 220px;
   }
-  /* Position der Upload-Button */
-  .upload-button {
-    position: absolute;
-    top: 100px;
-    left: auto;
-  }  
-  /* Position der NDVI-Button */
-  .ndvi-button {
-    position: absolute;
-    top: 130px;
-    left: auto;
+  .ndvi-button-container {
+    top: 260px;
+  }
+}
+
+@media (max-width: 576px) {
+  .layer-button-container {
+    top: 180px;
+  }
+  .upload-button-container {
+    top: 220px;
+  }
+  .ndvi-button-container {
+    top: 260px;
   }
 }
