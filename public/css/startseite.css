@@ -49,6 +49,28 @@ main {
   padding: 0;
 }
 
+/*------------------------------------------------------------------------*/
+/* Ladekreis */
+/*------------------------------------------------------------------------*/
+#loadingCircle {
+  border: 5px solid #f3f3f3; /* Heller grauer Rand */
+  border-top: 5px solid #3498db; /* Blaue Farbe für den rotierenden Teil */
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 2s linear infinite;
+  position: absolute; /* Positioniere den Ladekreis relativ zum nächsten positionierten Elternteil */
+  top: 50%;          /* Zentriere vertikal */
+  left: 50%;         /* Zentriere horizontal */
+  margin-top: -25px;  /* Verschiebe um die halbe Höhe nach oben */
+  margin-left: -25px; /* Verschiebe um die halbe Breite nach links */
+  z-index: 1001;      /* Stelle sicher, dass er über anderen Elementen liegt */
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 
 /*------------------------------------------------------------------------*/
 /* Layer Selection Style */

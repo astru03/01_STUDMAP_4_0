@@ -200,6 +200,9 @@ $(document).ready(function () {
 
       const getCapabilitiesUrl = `http://localhost:3000/proxy?url=${encodeURIComponent("http://zdm-studmap.uni-muenster.de:8080/geoserver/ows?service=WMS&version=1.3.0&request=GetCapabilities")}`;
       //const getCapabilitiesUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/ows?service=WMS&version=1.3.0&request=GetCapabilities";
+      
+      // Ladekreis anzeigen
+      $('#loadingCircle').show();
 
       //hole aus den getCapabilities das entsprechende Koordinatensystem
       $.ajax({
@@ -222,11 +225,13 @@ $(document).ready(function () {
           }).get();
 
           $('#wmsCrs').text(crsList.join(", "));
+          $('#loadingCircle').hide();
           $('#wmsInfoModal').modal('show');
         },
         error: function (xhr, status, error) {
           console.error("Fehler bei der CRS-Abfrage:", status, error);
           alert("Fehler beim Abrufen der GetCapabilities: " + error);
+          $('#loadingCircle').hide();
           $('#wmsInfoModal').modal('show');
         }
       });
