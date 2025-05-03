@@ -59,7 +59,8 @@ const categories = {
       },
       'Orthophotos & RGB-Aufnahmen': {
         layers: {
-          'RGB_NIR_Sentinel': 'ivv6mapsarcgis:RGB_NIR Sentinel'
+          'RGB_NIR_Sentinel': 'ivv6mapsarcgis:RGB_NIR Sentinel',
+          'Orthophoto (RGB) 2018': 'UASarcgis:Orthophoto_RGB'
         }
       },
       'Flüsse': {
@@ -185,7 +186,8 @@ $(document).ready(function () {
       if (selectedCategory === 'OpenNRW') {
         geoserverBaseUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/OpenNRW/ows";
       } else if (selectedCategory === 'UAS') {
-        geoserverBaseUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/ivv6mapsarcgis/ows";
+        //geoserverBaseUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/ivv6mapsarcgis/ows";
+        geoserverBaseUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/UASarcgis/ows";
       } else {
         alert("Ungültige Kategorie gewählt.");
         return;
