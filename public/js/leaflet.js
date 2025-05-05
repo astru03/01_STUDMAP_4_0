@@ -42,29 +42,42 @@ layerButton._container.classList.add("layer-button-container");
 
 // Dynamically Add Categories and Subcategories
 const categories = {
-  'UAS': {
-    name: 'UAS',
+  'UAS 2018': {
+    name: 'UAS 2018',
     subcategories: {
-      'Höhenmodelle & Geländeanalyse': {
+      'Orthophotos & Multispektrale Daten': {
         layers: {
-          'HillShade_UAS_2019': 'ivv6mapsarcgis:HillShade UAS 2019',
-          'Hillshade_UAS_2018': 'ivv6mapsarcgis:Hillshade UAS 2018'
+          'Orthophoto (RGB) 2018': 'UASarcgis:Orthophoto_RGB_2018',
+          'Orthophoto (Multispectral) 2018': 'UASarcgis:Orthophoto (Multispectral) 2018'
         }
       },
-      'Multispektrale Analysen & NDVI': {
+      'Vegetations- & Indexkarten': {
         layers: {
-          'Multispectral__WTL1 UAS 2023': 'ivv6mapsarcgis:Multispectra__WTL1 UAS 2023',
-          'Multispectral_WTL1 UAS 2022': 'ivv6mapsarcgis:Multispectral_WTL1 UAS 2022'
+          'NDVI Index 2018': 'UASarcgis:NDVI Index 2018'
         }
       },
-      'Orthophotos & RGB-Aufnahmen': {
+      'Höhen- & Oberflächenmodelle': {
         layers: {
-          'RGB_NIR_Sentinel': 'ivv6mapsarcgis:RGB_NIR Sentinel',
-          'Orthophoto (RGB) 2018': 'UASarcgis:Orthophoto_RGB'
+          'Digital Surface Model (DSM) 2018': 'UASarcgis:Digital Surface Model (DSM) 2018'
         }
       },
-      'Flüsse': {
-
+      'Landbedeckung & Flächeninformation': {
+        layers: {
+          'Land Cover 2018': 'UASarcgis:Land Cover 2018',
+          'Study Area 2018': 'UASarcgis:Study Area 2018'
+        }
+      },
+      'Flug- & Messdaten': {
+        layers: {
+          'Flight Path 2018': 'UASarcgis:Flight Path 2018',
+          'Flight Points 2018': 'UASarcgis:Flight Points 2018'
+        }
+      },
+      'Umweltdaten': {
+        layers: {
+          'Air Quality PM Measurements 2018': 'UASarcgis:Air Quality PM 2018',
+          'LiDAR Stations 2018': 'UASarcgis:LiDAR Stations 2018'
+        }
       }
     }
   },
@@ -178,14 +191,14 @@ $(document).ready(function () {
     const selectedLayers = $('.layer-checkbox:checked').map(function () {
       return $(this).val();
     }).get();
-    //Unterscheidung ob UAS oder OpenNRW gewählt wurde, je nach auswahl wird die URL für das WMS angepasst.
+    //Unterscheidung ob UAS 2018 oder OpenNRW gewählt wurde, je nach auswahl wird die URL für das WMS angepasst.
     if (selectedLayers.length === 1 && selectedCategory) {
       const selectedLayer = selectedLayers[0];
       let geoserverBaseUrl;
 
       if (selectedCategory === 'OpenNRW') {
         geoserverBaseUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/OpenNRW/ows";
-      } else if (selectedCategory === 'UAS') {
+      } else if (selectedCategory === 'UAS 2018') {
         //geoserverBaseUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/ivv6mapsarcgis/ows";
         geoserverBaseUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/UASarcgis/ows";
       } else {
@@ -212,6 +225,7 @@ $(document).ready(function () {
 
       const getCapabilitiesUrl = `http://localhost:3000/proxy?url=${encodeURIComponent("http://zdm-studmap.uni-muenster.de:8080/geoserver/ows?service=WMS&version=1.3.0&request=GetCapabilities")}`;
       //const getCapabilitiesUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/ows?service=WMS&version=1.3.0&request=GetCapabilities";
+      console.log(getCapabilitiesUrl);
       
       // Ladekreis anzeigen
       $('#loadingCircle').show();
