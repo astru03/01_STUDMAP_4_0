@@ -48,7 +48,7 @@ const categories = {
       'Orthophotos & Multispektrale Daten': {
         layers: {
           'Orthophoto (RGB) 2018': 'UASarcgis:Orthophoto_RGB_2018',
-          'Orthophoto (Multispectral) 2018': 'UASarcgis:Orthophoto (Multispectral) 2018'
+          'Orthophoto (Multispectral) 2018': 'UASarcgis:Orthophoto_Multispectral_2018'
         }
       },
       'Vegetations- & Indexkarten': {
@@ -58,7 +58,7 @@ const categories = {
       },
       'Höhen- & Oberflächenmodelle': {
         layers: {
-          'Digital Surface Model (DSM) 2018': 'UASarcgis:Digital Surface Model (DSM) 2018'
+          'Digital Surface Model (DSM) 2018': 'UASarcgis:Digital_Surface_Model_DSM_2018'
         }
       },
       'Landbedeckung & Flächeninformation': {
@@ -108,7 +108,7 @@ const categories = {
         layers: {
           'WMS_NW_GELAENDESTUFEN': 'OpenNRW:WMS_NW_GELAENDESTUFEN',
           'Geländestufen': 'OpenNRW:nw_gelaendestufen',
-          'Geländestufen Metadaten': 'OpenNRW:nw_gelaendestufen_info'
+          'Geländestufen Metadaten': 'OpenNRW:nw_gelaendestufen_info'
         }
       },
       'Höhenlinien und Höhenpunkte': {
@@ -235,14 +235,19 @@ $(document).ready(function () {
         url: getCapabilitiesUrl,
         dataType: 'xml',
         success: function (xml) {
-          const layerElement = $(xml).find(`Layer > Layer > Name:contains(${selectedLayer})`).closest('Layer');
+          //const layerElement = $(xml).find(`Layer > Layer > Name:contains(${selectedLayer})`).closest('Layer');
+          const layerElement = $(xml).find('Layer > Layer > Name').filter(function() {
+            return $(this).text() === selectedLayer;
+          }).closest('Layer');
+
           if (layerElement.length === 0) {
             console.error("Layer nicht gefunden in GetCapabilities.");
             alert("Layer nicht gefunden in GetCapabilities.");
             return;
           }
 
-          const abstractText = layerElement.find('Abstract').text() || "Keine Beschreibung verfügbar.";
+          //const abstractText = layerElement.find('Abstract').text() || "Keine Beschreibung verfügbar.";
+          const abstractText = layerElement.children('Abstract').first().text() || "Keine Beschreibung verfügbar.";
           $('#wmsAbstract').text(abstractText);
 
 
