@@ -69,13 +69,13 @@ const categories = {
       },
       'Flug- & Messdaten': {
         layers: {
-          'Flight Path 2018': 'UASarcgis:Flight Path 2018',
-          'Flight Points 2018': 'UASarcgis:Flight Points 2018'
+          'Flight Path 40m 2018': 'UASarcgis:Flight Path 40m 2018',
+          'Flight Points 40m 2018': 'UASarcgis:Flight Points 40m 2018'
         }
       },
       'Umweltdaten': {
         layers: {
-          'Air Quality PM Measurements 2018': 'UASarcgis:Air Quality PM 2018',
+          'Air Qualitiy PM10 2018': 'UASarcgis:Air Qualitiy PM10 2018',
           'LiDAR Stations 2018': 'UASarcgis:LiDAR Stations 2018'
         }
       }
