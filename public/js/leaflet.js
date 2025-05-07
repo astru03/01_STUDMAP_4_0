@@ -235,7 +235,6 @@ $(document).ready(function () {
         url: getCapabilitiesUrl,
         dataType: 'xml',
         success: function (xml) {
-          //const layerElement = $(xml).find(`Layer > Layer > Name:contains(${selectedLayer})`).closest('Layer');
           const layerElement = $(xml).find('Layer > Layer > Name').filter(function() {
             return $(this).text() === selectedLayer;
           }).closest('Layer');
@@ -246,7 +245,26 @@ $(document).ready(function () {
             return;
           }
 
-          //const abstractText = layerElement.find('Abstract').text() || "Keine Beschreibung verfügbar.";
+          let bbox;
+          const bboxElement = layerElement.find('BoundingBox[CRS="EPSG:4326"], BoundingBox[CRS="CRS:84"]').first();
+          if (bboxElement.length > 0) {
+            bbox = [
+              [parseFloat(bboxElement.attr('miny')), parseFloat(bboxElement.attr('minx'))],
+              [parseFloat(bboxElement.attr('maxy')), parseFloat(bboxElement.attr('maxx'))]
+            ];
+          } else {
+            const anyBbox = layerElement.find('BoundingBox').first();
+            if (anyBbox.length > 0) {
+              bbox = [
+                [parseFloat(anyBbox.attr('miny')), parseFloat(anyBbox.attr('minx'))],
+                [parseFloat(anyBbox.attr('maxy')), parseFloat(anyBbox.attr('maxx'))]
+              ];
+            }
+          }
+          if (bbox && selectedCategory === 'UAS 2018') {
+            map.fitBounds(bbox);
+          }
+
           const abstractText = layerElement.children('Abstract').first().text() || "Keine Beschreibung verfügbar.";
           $('#wmsAbstract').text(abstractText);
 
@@ -286,7 +304,7 @@ $(document).ready(function () {
       $('.layer-checkbox').not(this).prop('checked', false);
     }
   });
-  
+
 });
 
 
