@@ -280,6 +280,13 @@ $(document).ready(function () {
     document.execCommand("copy");
     alert("WMS-URL wurde kopiert!");
   });
+
+  $(document).on('change', '.layer-checkbox', function() {
+    if (this.checked) {
+      $('.layer-checkbox').not(this).prop('checked', false);
+    }
+  });
+  
 });
 
 
