@@ -814,7 +814,7 @@ const ndviButton = L.easyButton(
 
 // Tooltip hinzufügen
 ndviButton.button.classList.add("ndvi-button");
-ndviButton.button.setAttribute("title", "NDVI");
+ndviButton.button.setAttribute("title", "Select Layer for processing NDVI");
 
 // Container-Klasse hinzufügen
 ndviButton._container.classList.add("ndvi-button-container");
