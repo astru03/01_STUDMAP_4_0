@@ -721,6 +721,7 @@ function handleGPX(file) {
 //------------------------------------------------
 // Funktion zum Verarbeiten von GeoTIFF (FERTIG)
 function handleGeoTIFF(file) {
+  document.getElementById('loadingCircle').style.display = 'block';
   const reader = new FileReader();
 
   reader.onload = async function (e) {
@@ -751,6 +752,8 @@ function handleGeoTIFF(file) {
 
     } catch (error) {
       console.error("Fehler beim Laden des GeoTIFF:", error);
+    } finally {
+      document.getElementById('loadingCircle').style.display = 'none';
     }
   };
 
