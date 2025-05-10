@@ -811,17 +811,125 @@ function validateFileType(file) {
 const ndviButton = L.easyButton(
   `<img src="../images/NDVI.svg" alt="NDVI" style="width:20px;height:20px;">`,
   function () {
-    console.log('NDVI button clicked!');
+    const ndviModal = new bootstrap.Modal(document.getElementById('ndviModal'));
+    ndviModal.show();
   }
 ).addTo(map);
 
-// Tooltip hinzufügen
 ndviButton.button.classList.add("ndvi-button");
 ndviButton.button.setAttribute("title", "Select Layer for processing NDVI");
-
-// Container-Klasse hinzufügen
 ndviButton._container.classList.add("ndvi-button-container");
+
+// NDVI-Layer auf Karte anzeigen
+let ndviLayerOnMap = null;
+
+document.getElementById("ndviModalStart").onclick = function() {
+  const layerName = document.getElementById("ndviLayerSelect").value;
+  // Modal schließen (Bootstrap 5)
+  const modalInstance = bootstrap.Modal.getInstance(document.getElementById('ndviModal'));
+  if(modalInstance) modalInstance.hide();
+  runNdviWpsProcess(layerName);
+};
+
+function runNdviWpsProcess(layerName) {
+  const wpsUrl = 'http://zdm-studmap.uni-muenster.de:8080/geoserver/Sentinel2_NDVI/wps';
+  const jiffleScript = "nir = src[3]; vir = src[2]; dest = (nir - vir) / (nir + vir);"; // ggf. Bandindex anpassen!
+
+  const xml = `
+    <wps:Execute service="WPS" version="1.0.0"
+        xmlns:wps="http://www.opengis.net/wps/1.0.0"
+        xmlns:ows="http://www.opengis.net/ows/1.1"
+        xmlns:xlink="http://www.w3.org/1999/xlink"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.opengis.net/wps/1.0.0
+        http://schemas.opengis.net/wps/1.0.0/wpsAll.xsd">
+      <ows:Identifier>ras:Jiffle</ows:Identifier>
+      <wps:DataInputs>
+        <wps:Input>
+          <ows:Identifier>RASTER_LAYER</ows:Identifier>
+          <wps:Data>
+            <wps:LiteralData>${layerName}</wps:LiteralData>
+          </wps:Data>
+        </wps:Input>
+        <wps:Input>
+          <ows:Identifier>script</ows:Identifier>
+          <wps:Data>
+            <wps:LiteralData>${jiffleScript}</wps:LiteralData>
+          </wps:Data>
+        </wps:Input>
+      </wps:DataInputs>
+      <wps:ResponseForm>
+        <wps:RawDataOutput mimeType="image/tiff">
+          <ows:Identifier>result</ows:Identifier>
+        </wps:RawDataOutput>
+      </wps:ResponseForm>
+    </wps:Execute>
+  `;
+
+  // Ladeindikator anzeigen, falls vorhanden
+  if (typeof $('#loadingCircle').show === 'function') {
+    $('#loadingCircle').show();
+  }
+
+  fetch(wpsUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/xml' },
+    body: xml
+  })
+  .then(response => {
+    if (!response.ok) throw new Error("WPS-Fehler: " + response.statusText);
+    return response.blob();
+  })
+  .then(blob => {
+    if (typeof $('#loadingCircle').hide === 'function') {
+      $('#loadingCircle').hide();
+    }
+    // Download-Link erzeugen (optional)
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'ndvi_result.tif';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    // GeoTIFF auf Karte anzeigen
+    const reader = new FileReader();
+    reader.onload = function() {
+      parseGeoraster(reader.result).then(georaster => {
+        // Vorherigen NDVI-Layer entfernen
+        if (ndviLayerOnMap) {
+          map.removeLayer(ndviLayerOnMap);
+        }
+        ndviLayerOnMap = new GeoRasterLayer({
+          georaster: georaster,
+          opacity: 0.7,
+          pixelValuesToColorFn: values => {
+            // NDVI-ColorRamp: rot (negativ), gelb (0), grün (positiv)
+            const ndvi = values[0];
+            if (ndvi === null) return null;
+            if (ndvi < 0) return "#d73027";
+            if (ndvi < 0.2) return "#fee08b";
+            if (ndvi < 0.4) return "#d9ef8b";
+            if (ndvi < 0.6) return "#91cf60";
+            return "#1a9850";
+          }
+        });
+        ndviLayerOnMap.addTo(map);
+        map.fitBounds(ndviLayerOnMap.getBounds());
+      });
+    };
+    reader.readAsArrayBuffer(blob);
+  })
+  .catch(err => {
+    if (typeof $('#loadingCircle').hide === 'function') {
+      $('#loadingCircle').hide();
+    }
+    alert("Fehler beim NDVI-Prozess: " + err);
+  });
+}
 //------------------------------------------------------------------------
+
 
 
 

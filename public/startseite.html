@@ -53,7 +53,9 @@
   <script src="https://unpkg.com/georaster"></script>
   <script src="https://unpkg.com/georaster-layer-for-leaflet"></script>
 
-
+  <!-- georaster-layer-for-leaflet -->
+  <script src="https://unpkg.com/georaster/dist/georaster.browser.min.js"></script>
+  <script src="https://unpkg.com/georaster-layer-for-leaflet/dist/georaster-layer-for-leaflet.min.js"></script>
 
 </head>
 
@@ -166,7 +168,26 @@
   <!--------------------------->
   <!-- NDVI Selection Modal -->
   <!--------------------------->
-
+  <div class="modal fade" id="ndviModal" tabindex="-1" aria-labelledby="ndviModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-md">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h6 class="modal-title" id="ndviModalLabel">NDVI Layer auswählen</h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+        </div>
+        <div class="modal-body">
+          <select id="ndviLayerSelect" class="form-select mb-3">
+            <option value="Sentinel2_NDVI:Sentinel2 Muenste">Sentinel2 Muenste</option>
+            <option value="Sentinel2_NDVI:Sentinel2 Norderney">Sentinel2 Norderney</option>
+          </select>
+        </div>
+        <div class="modal-footer justify-content-center">
+          <button type="button" class="btn btn-success" id="ndviModalStart">NDVI berechnen</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
 
 
 
