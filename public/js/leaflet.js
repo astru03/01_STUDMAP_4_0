@@ -224,7 +224,7 @@ $(document).ready(function () {
       $('#wmsLayerName').text(selectedLayer);
 
       const getCapabilitiesUrl = `http://localhost:3000/proxy?url=${encodeURIComponent("http://zdm-studmap.uni-muenster.de:8080/geoserver/ows?service=WMS&version=1.3.0&request=GetCapabilities")}`;
-      //const getCapabilitiesUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/ows?service=WMS&version=1.3.0&request=GetCapabilities";
+      //const getCapabilitiesUrl = "/proxy?url=" + encodeURIComponent("http://zdm-studmap.uni-muenster.de:8080/geoserver/ows?service=WMS&version=1.3.0&request=GetCapabilities");
       console.log(getCapabilitiesUrl);
       
       // Ladekreis anzeigen
