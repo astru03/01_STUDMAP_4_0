@@ -832,8 +832,9 @@ document.getElementById("ndviModalStart").onclick = function() {
 };
 
 function runNdviWpsProcess(layerName) {
-  const wpsUrl = 'http://zdm-studmap.uni-muenster.de:8080/geoserver/Sentinel2_NDVI/wps';
-  const jiffleScript = "nir = src[3]; vir = src[2]; dest = (nir - vir) / (nir + vir);"; // ggf. Bandindex anpassen!
+  const geoserverWpsUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/Sentinel2_NDVI/wps";
+  const wpsUrl = "http://localhost:3000/proxy?url=" + encodeURIComponent(geoserverWpsUrl);
+  const jiffleScript = "nir = src[3]; vir = src[2]; dest = (nir - vir) / (nir + vir);";
 
   const xml = `
     <wps:Execute service="WPS" version="1.0.0"

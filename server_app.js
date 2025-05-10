@@ -17,14 +17,12 @@ app.get("/", (req, res) => { res.sendFile(__dirname + "/public/startseite.html")
 app.get("/dokumentation", (req, res) => { res.sendFile(__dirname + "/public/dokumentation.html"); });
 app.get("/impressum", (req, res) => { res.sendFile(__dirname + "/public/impressum.html"); });
 
-// Proxy für GeoServer-Anfragen
+// Proxy für Get-Anfrage vom GeoServer
 app.get('/proxy', async (req, res) => {
   const targetUrl = req.query.url;
-
   if (!targetUrl) {
       return res.status(400).send("Fehlende URL-Parameter.");
   }
-
   try {
       const response = await axios.get(targetUrl, {
           responseType: 'arraybuffer', // Wichtig für Binärdaten (Bilder, XML, etc.)
@@ -32,18 +30,37 @@ app.get('/proxy', async (req, res) => {
               'Accept': 'application/xml,text/xml,*/*',
           }
       });
-
       // Korrekte CORS-Header setzen
       res.setHeader('Access-Control-Allow-Origin', '*');
       res.setHeader('Content-Type', response.headers['content-type']);
-
       res.send(response.data);
   } catch (error) {
       console.error("Fehler beim Proxy-Request:", error.message);
       res.status(500).send("Fehler beim Abrufen der Daten: " + error.message);
   }
 });
-
+// Proxy für POST-Anfragen vom GeoServer
+app.post('/proxy', express.text({ type: '*/*' }), async (req, res) => {
+    const targetUrl = req.query.url;
+    if (!targetUrl) {
+        return res.status(400).send("Fehlende URL-Parameter.");
+    }
+    try {
+        const response = await axios.post(targetUrl, req.body, {
+            responseType: 'arraybuffer',
+            headers: {
+                'Content-Type': req.headers['content-type'] || 'text/xml',
+                'Accept': 'application/xml,text/xml,*/*'
+            }
+        });
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Content-Type', response.headers['content-type']);
+        res.send(response.data);
+    } catch (error) {
+        console.error("Fehler beim Proxy-POST-Request:", error.message);
+        res.status(500).send("Fehler beim POST an den Zielserver: " + error.message);
+    }
+  });
 
 // Server starten
 app.listen(PORT, () => {
