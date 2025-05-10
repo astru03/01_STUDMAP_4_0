@@ -824,17 +824,29 @@ ndviButton._container.classList.add("ndvi-button-container");
 let ndviLayerOnMap = null;
 
 document.getElementById("ndviModalStart").onclick = function() {
+  // Liest den Layer-Namen aus dem Dropdown aus
   const layerName = document.getElementById("ndviLayerSelect").value;
+  console.log(layerName)
   // Modal schließen (Bootstrap 5)
   const modalInstance = bootstrap.Modal.getInstance(document.getElementById('ndviModal'));
-  if(modalInstance) modalInstance.hide();
+  if (modalInstance) modalInstance.hide();
   runNdviWpsProcess(layerName);
 };
+
+function escapeXmlUrl(url) {
+  return url.replace(/&/g, '&amp;');
+}
 
 function runNdviWpsProcess(layerName) {
   const geoserverWpsUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/Sentinel2_NDVI/wps";
   const wpsUrl = "http://localhost:3000/proxy?url=" + encodeURIComponent(geoserverWpsUrl);
-  const jiffleScript = "nir = src[3]; vir = src[2]; dest = (nir - vir) / (nir + vir);";
+
+  // Layername nur einmal encodieren!
+  const wcsUrlRaw  = "http://zdm-studmap.uni-muenster.de:8080/geoserver/Sentinel2_NDVI/wcs?service=WCS&version=1.1.1&request=GetCoverage&identifier=" + encodeURIComponent(layerName) + "&format=image/tiff";
+  // KEIN HTML-Escaping!
+  const wcsUrl = escapeXmlUrl(wcsUrlRaw);
+
+  const jiffleScript = "nir = src[7]; red = src[3]; dest = (nir - red) / (nir + red);";
 
   const xml = `
     <wps:Execute service="WPS" version="1.0.0"
@@ -847,10 +859,8 @@ function runNdviWpsProcess(layerName) {
       <ows:Identifier>ras:Jiffle</ows:Identifier>
       <wps:DataInputs>
         <wps:Input>
-          <ows:Identifier>RASTER_LAYER</ows:Identifier>
-          <wps:Data>
-            <wps:LiteralData>${layerName}</wps:LiteralData>
-          </wps:Data>
+          <ows:Identifier>coverage</ows:Identifier>
+          <wps:Reference xlink:href="${wcsUrl}" method="GET"/>
         </wps:Input>
         <wps:Input>
           <ows:Identifier>script</ows:Identifier>
@@ -871,7 +881,7 @@ function runNdviWpsProcess(layerName) {
   if (typeof $('#loadingCircle').show === 'function') {
     $('#loadingCircle').show();
   }
-
+  console.log("WPS XML Request:", xml);
   fetch(wpsUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'text/xml' },
@@ -929,6 +939,7 @@ function runNdviWpsProcess(layerName) {
     alert("Fehler beim NDVI-Prozess: " + err);
   });
 }
+
 //------------------------------------------------------------------------
 
 
