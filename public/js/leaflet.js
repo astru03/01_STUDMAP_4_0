@@ -826,13 +826,13 @@ let ndviLayerOnMap = null;
 document.getElementById("ndviModalStart").onclick = function() {
   // Liest den Layer-Namen aus dem Dropdown aus
   const layerName = document.getElementById("ndviLayerSelect").value;
-  console.log(layerName)
   // Modal schließen (Bootstrap 5)
   const modalInstance = bootstrap.Modal.getInstance(document.getElementById('ndviModal'));
   if (modalInstance) modalInstance.hide();
   runNdviWpsProcess(layerName);
 };
 
+// Hilfsfunktion für XML-URL-Escaping
 function escapeXmlUrl(url) {
   return url.replace(/&/g, '&amp;');
 }
@@ -841,9 +841,8 @@ function runNdviWpsProcess(layerName) {
   const geoserverWpsUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/Sentinel2_NDVI/wps";
   const wpsUrl = "http://localhost:3000/proxy?url=" + encodeURIComponent(geoserverWpsUrl);
 
-  // Layername nur einmal encodieren!
-  const wcsUrlRaw  = "http://zdm-studmap.uni-muenster.de:8080/geoserver/Sentinel2_NDVI/wcs?service=WCS&version=1.1.1&request=GetCoverage&identifier=" + encodeURIComponent(layerName) + "&format=image/tiff";
-  // KEIN HTML-Escaping!
+  // Layername für URL und XML korrekt encodieren
+  const wcsUrlRaw = `http://zdm-studmap.uni-muenster.de:8080/geoserver/Sentinel2_NDVI/wcs?service=WCS&version=1.1.1&request=GetCoverage&identifier=${encodeURIComponent(layerName)}&format=image/tiff`;
   const wcsUrl = escapeXmlUrl(wcsUrlRaw);
 
   const jiffleScript = "nir = src[7]; red = src[3]; dest = (nir - red) / (nir + red);";
@@ -882,6 +881,7 @@ function runNdviWpsProcess(layerName) {
     $('#loadingCircle').show();
   }
   console.log("WPS XML Request:", xml);
+
   fetch(wpsUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'text/xml' },
@@ -939,6 +939,7 @@ function runNdviWpsProcess(layerName) {
     alert("Fehler beim NDVI-Prozess: " + err);
   });
 }
+
 
 //------------------------------------------------------------------------
 
