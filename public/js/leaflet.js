@@ -226,7 +226,7 @@ $(document).ready(function () {
       const getCapabilitiesUrl = `http://localhost:3000/proxy?url=${encodeURIComponent("http://zdm-studmap.uni-muenster.de:8080/geoserver/ows?service=WMS&version=1.3.0&request=GetCapabilities")}`;
       //const getCapabilitiesUrl = "/proxy?url=" + encodeURIComponent("http://zdm-studmap.uni-muenster.de:8080/geoserver/ows?service=WMS&version=1.3.0&request=GetCapabilities");
       console.log(getCapabilitiesUrl);
-      
+
       // Ladekreis anzeigen
       $('#loadingCircle').show();
 
@@ -235,7 +235,7 @@ $(document).ready(function () {
         url: getCapabilitiesUrl,
         dataType: 'xml',
         success: function (xml) {
-          const layerElement = $(xml).find('Layer > Layer > Name').filter(function() {
+          const layerElement = $(xml).find('Layer > Layer > Name').filter(function () {
             return $(this).text() === selectedLayer;
           }).closest('Layer');
 
@@ -299,7 +299,7 @@ $(document).ready(function () {
     alert("WMS-URL wurde kopiert!");
   });
 
-  $(document).on('change', '.layer-checkbox', function() {
+  $(document).on('change', '.layer-checkbox', function () {
     if (this.checked) {
       $('.layer-checkbox').not(this).prop('checked', false);
     }
@@ -524,7 +524,7 @@ function isValidCoordinate(coord) {
   if (Array.isArray(coord[0])) {
     return coord.every(isValidCoordinate); // rekursiver Aufruf für verschachtelte Arrays
   }
-  
+
   // Basisüberprüfung: Koordinaten müssen 2 numerische Werte sein, die im gültigen Bereich für WGS84 liegen
   return (
     Array.isArray(coord) &&
@@ -586,14 +586,14 @@ function handleCSV(file) {
       if (!line.trim()) continue; // Überspringe leere Zeilen
 
       const values = splitCSVLine(line); // Teile die Zeile in Spalten auf mit der splitCSVLine-Funktion
-      
+
       // Extrahiere die Werte für "name", "lat", "lon" und "geometry" aus der Zeile
       const name = values[nameIndex] || "Unbenannt"; // Wenn "name" fehlt, setze es auf "Unbenannt"
       const lat = values[latIndex] ? parseFloat(values[latIndex]) : NaN; // "lat" als Zahl zu parsen
       const lon = values[lonIndex] ? parseFloat(values[lonIndex]) : NaN; // "lon" als Zahl zu parsen
       const geometry = values[geomIndex] ? values[geomIndex].trim() : ""; // Extrahiere "geometry" und entferne unnötige Leerzeichen
 
-      
+
       if (!isNaN(lat) && !isNaN(lon) && geometry === "") { // Wenn lat und lon vorhanden sind, aber geometry leer ist, füge einen Marker hinzu
         features.push(L.marker([lat, lon]).bindPopup(name)); // Marker mit Popup hinzufügen
       } else if (geometry.startsWith("LINESTRING")) { // Wenn geometry ein "LINESTRING" ist, erstelle eine Polyline
@@ -632,13 +632,13 @@ function splitCSVLine(line) {
   let inQuotes = false;
 
   // Gehe jedes Zeichen der Zeile durch und überprüfe, ob es sich um ein Komma handelt, das nicht in Anführungszeichen steht
-  for (let i = 0; i < line.length; i++) { 
+  for (let i = 0; i < line.length; i++) {
     const char = line[i];
 
     // Umschalten des inQuotes-Flags, wenn ein Anführungszeichen gefunden wird
     if (char === '"' && (i === 0 || line[i - 1] !== "\\")) {
       inQuotes = !inQuotes;
-    // Wenn ein Komma gefunden wird und wir nicht in Anführungszeichen sind, teile die Zeile
+      // Wenn ein Komma gefunden wird und wir nicht in Anführungszeichen sind, teile die Zeile
     } else if (char === "," && !inQuotes) {
       values.push(current.trim()); // Füge den aktuellen Wert hinzu
       current = ""; // Setze den aktuellen Wert zurück
@@ -808,6 +808,18 @@ function validateFileType(file) {
 // NDVI-EasyButton Funktionen
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
+// Layer-Metadaten: BoundingBox und EPSG für beide Layer
+const layerMeta = {
+  "Sentinel2_NDVI:Sentinel2 Muenster": {
+    bbox: [400000, 5753000, 410500, 5762000], // [minX, minY, maxX, maxY]
+    epsg: "32632"
+  },
+  "Sentinel2_NDVI:Sentinel2 Norderney": {
+    bbox: [773000, 5957000, 787000, 5962500], // Beispielwerte, bitte ggf. anpassen!
+    epsg: "32631"
+  }
+};
+
 const ndviButton = L.easyButton(
   `<img src="../images/NDVI.svg" alt="NDVI" style="width:20px;height:20px;">`,
   function () {
@@ -823,10 +835,8 @@ ndviButton._container.classList.add("ndvi-button-container");
 // NDVI-Layer auf Karte anzeigen
 let ndviLayerOnMap = null;
 
-document.getElementById("ndviModalStart").onclick = function() {
-  // Liest den Layer-Namen aus dem Dropdown aus
+document.getElementById("ndviModalStart").onclick = function () {
   const layerName = document.getElementById("ndviLayerSelect").value;
-  // Modal schließen (Bootstrap 5)
   const modalInstance = bootstrap.Modal.getInstance(document.getElementById('ndviModal'));
   if (modalInstance) modalInstance.hide();
   runNdviWpsProcess(layerName);
@@ -842,7 +852,14 @@ function runNdviWpsProcess(layerName) {
   const wpsUrl = "http://localhost:3000/proxy?url=" + encodeURIComponent(geoserverWpsUrl);
 
   // Layername für URL und XML korrekt encodieren
-  const wcsUrlRaw = `http://zdm-studmap.uni-muenster.de:8080/geoserver/Sentinel2_NDVI/wcs?service=WCS&version=1.1.1&request=GetCoverage&identifier=${encodeURIComponent(layerName)}&format=image/tiff`;
+  const meta = layerMeta[layerName];
+  const [minX, minY, maxX, maxY] = meta.bbox;
+  const epsg = meta.epsg;
+
+  const wcsUrlRaw = `http://zdm-studmap.uni-muenster.de:8080/geoserver/Sentinel2_NDVI/ows?` +
+    `service=WCS&version=2.0.0&request=GetCoverage&coverageId=${encodeURIComponent(layerName)}` +
+    `&format=image/tiff&subset=E(${minX},${maxX})&subset=N(${minY},${maxY})&outputCRS=EPSG:4326`;
+
   const wcsUrl = escapeXmlUrl(wcsUrlRaw);
 
   const jiffleScript = "nir = src[7]; red = src[3]; dest = (nir - red) / (nir + red);";
@@ -887,57 +904,99 @@ function runNdviWpsProcess(layerName) {
     headers: { 'Content-Type': 'text/xml' },
     body: xml
   })
-  .then(response => {
-    if (!response.ok) throw new Error("WPS-Fehler: " + response.statusText);
-    return response.blob();
-  })
-  .then(blob => {
-    if (typeof $('#loadingCircle').hide === 'function') {
-      $('#loadingCircle').hide();
-    }
-    // Download-Link erzeugen (optional)
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'ndvi_result.tif';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+    .then(response => {
+      if (!response.ok) throw new Error("WPS-Fehler: " + response.statusText);
+      return response.blob();
+    })
+    .then(blob => {
+      if (typeof $('#loadingCircle').hide === 'function') {
+        $('#loadingCircle').hide();
+      }
+      // Download-Link erzeugen (optional)
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = 'ndvi_result.tif';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
 
-    // GeoTIFF auf Karte anzeigen
-    const reader = new FileReader();
-    reader.onload = function() {
-      parseGeoraster(reader.result).then(georaster => {
-        // Vorherigen NDVI-Layer entfernen
-        if (ndviLayerOnMap) {
-          map.removeLayer(ndviLayerOnMap);
-        }
-        ndviLayerOnMap = new GeoRasterLayer({
-          georaster: georaster,
-          opacity: 0.7,
-          pixelValuesToColorFn: values => {
-            // NDVI-ColorRamp: rot (negativ), gelb (0), grün (positiv)
-            const ndvi = values[0];
-            if (ndvi === null) return null;
-            if (ndvi < 0) return "#d73027";
-            if (ndvi < 0.2) return "#fee08b";
-            if (ndvi < 0.4) return "#d9ef8b";
-            if (ndvi < 0.6) return "#91cf60";
-            return "#1a9850";
+      // Anzeige auf Leaflet
+      const reader = new FileReader();
+      reader.onload = function () {
+        parseGeoraster(reader.result).then(georaster => {
+          console.log("GeoRaster geladen:", georaster);
+
+          if (!georaster || !georaster.width || !georaster.height) {
+            alert("GeoTIFF konnte nicht geladen werden.");
+            return;
           }
+
+          // Min und Max aus den Werten ermitteln
+          let min = Infinity;
+          let max = -Infinity;
+
+          const values = georaster.values[0]; // NDVI-Band (1. Band)
+          for (let y = 0; y < values.length; y++) {
+            for (let x = 0; x < values[y].length; x++) {
+              const val = values[y][x];
+              if (val === null || isNaN(val)) continue;
+              if (val < min) min = val;
+              if (val > max) max = val;
+            }
+          }
+
+          console.log("NDVI Min:", min);
+          console.log("NDVI Max:", max);
+
+          // Hilfsfunktion für dynamische Farbe basierend auf min/max
+          function getColorForNdvi(ndvi, min, max) {
+            if (ndvi === null || isNaN(ndvi)) return null;
+
+            const norm = (ndvi - min) / (max - min);
+
+            if (norm < 0.25) return "#d73027";  // rot
+            if (norm < 0.5) return "#fee08b";   // gelb
+            if (norm < 0.75) return "#d9ef8b";  // hellgrün
+            if (norm < 0.9) return "#91cf60";   // grün
+            return "#1a9850";                    // dunkelgrün
+          }
+
+
+          // Vorherigen Layer entfernen
+          if (ndviLayerOnMap) {
+            map.removeLayer(ndviLayerOnMap);
+          }
+
+          ndviLayerOnMap = new GeoRasterLayer({
+            georaster: georaster,
+            opacity: 0.7,
+            resolution: 256,
+            pixelValuesToColorFn: values => {
+              const ndvi = values[0];
+              return getColorForNdvi(ndvi, min, max);
+            }
+          });
+
+          ndviLayerOnMap.addTo(map);
+
+          const bounds = ndviLayerOnMap.getBounds();
+          console.log("NDVI Layer Bounds:", bounds);
+          map.fitBounds(bounds);
+        }).catch(err => {
+          console.error("Fehler beim Parsen des GeoTIFFs:", err);
+          alert("Fehler beim Parsen des GeoTIFFs.");
         });
-        ndviLayerOnMap.addTo(map);
-        map.fitBounds(ndviLayerOnMap.getBounds());
-      });
-    };
-    reader.readAsArrayBuffer(blob);
-  })
-  .catch(err => {
-    if (typeof $('#loadingCircle').hide === 'function') {
-      $('#loadingCircle').hide();
-    }
-    alert("Fehler beim NDVI-Prozess: " + err);
-  });
+      };
+      reader.readAsArrayBuffer(blob);
+    })
+    .catch(err => {
+      if (typeof $('#loadingCircle').hide === 'function') {
+        $('#loadingCircle').hide();
+      }
+      console.error(err);
+      alert("Fehler beim NDVI-Prozess: " + err);
+    });
 }
 
 
