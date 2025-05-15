@@ -738,7 +738,7 @@ function handleGeoTIFF(file) {
       // GeoRasterLayer erstellen
       const layer = new GeoRasterLayer({
         georaster,
-        opacity: 0.7,
+        opacity: 1.0,
         resolution: 256 // Standardwert für bessere Darstellung
       });
 
@@ -948,21 +948,7 @@ function runNdviWpsProcess(layerName) {
 
           console.log("NDVI Min:", min);
           console.log("NDVI Max:", max);
-
-          // Hilfsfunktion für dynamische Farbe basierend auf min/max
-          function getColorForNdvi(ndvi, min, max) {
-            if (ndvi === null || isNaN(ndvi)) return null;
-
-            const norm = (ndvi - min) / (max - min);
-
-            if (norm < 0.25) return "#d73027";  // rot
-            if (norm < 0.5) return "#fee08b";   // gelb
-            if (norm < 0.75) return "#d9ef8b";  // hellgrün
-            if (norm < 0.9) return "#91cf60";   // grün
-            return "#1a9850";                    // dunkelgrün
-          }
-
-
+          
           // Vorherigen Layer entfernen
           if (ndviLayerOnMap) {
             map.removeLayer(ndviLayerOnMap);
@@ -970,11 +956,16 @@ function runNdviWpsProcess(layerName) {
 
           ndviLayerOnMap = new GeoRasterLayer({
             georaster: georaster,
-            opacity: 0.7,
+            opacity: 1.0,
             resolution: 256,
             pixelValuesToColorFn: values => {
               const ndvi = values[0];
-              return getColorForNdvi(ndvi, min, max);
+              if (ndvi === null || isNaN(ndvi)) return null;
+
+              const norm = (ndvi - min) / (max - min);
+              const gray = Math.round(norm * 255);
+              const hex = `#${gray.toString(16).padStart(2, '0').repeat(3)}`;
+              return hex;
             }
           });
 
