@@ -223,6 +223,7 @@ $(document).ready(function () {
       $('#wmsUrlInput').val(wmsUrl);
       $('#wmsLayerName').text(selectedLayer);
 
+      //**********WICHTIG FÜR SERVER ANPASSEN***********
       const getCapabilitiesUrl = `http://localhost:3000/proxy?url=${encodeURIComponent("http://zdm-studmap.uni-muenster.de:8080/geoserver/ows?service=WMS&version=1.3.0&request=GetCapabilities")}`;
       //const getCapabilitiesUrl = "/proxy?url=" + encodeURIComponent("http://zdm-studmap.uni-muenster.de:8080/geoserver/ows?service=WMS&version=1.3.0&request=GetCapabilities");
       console.log(getCapabilitiesUrl);
@@ -848,8 +849,11 @@ function escapeXmlUrl(url) {
 }
 
 function runNdviWpsProcess(layerName) {
+  //**********WICHTIG FÜR SERVER ANPASSEN***********
   const geoserverWpsUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/Sentinel2_NDVI/wps";
   const wpsUrl = "http://localhost:3000/proxy?url=" + encodeURIComponent(geoserverWpsUrl);
+  //const geoserverWpsUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/Sentinel2_NDVI/wps";
+  //const wpsUrl = "/proxy?url=" + encodeURIComponent(geoserverWpsUrl);
 
   // Layername für URL und XML korrekt encodieren
   const meta = layerMeta[layerName];
