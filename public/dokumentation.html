@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 
 <head>
     <meta charset="UTF-8">
@@ -15,28 +15,25 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
         crossorigin="anonymous"></script>
-
 </head>
 
 <body>
     <header>
         <nav class="navbar navbar-expand-md navbar-dark" style="background-color: #2d629fff;" id="mynavbar">
             <div class="container-fluid">
-                <!-- Flexbox für das Logo und die Navigation -->
                 <div class="d-flex align-items-center">
-                    <!-- Logo -->
                     <img id="logo" src="../images/Kompass_1.svg" alt="Logo">
-                    <!-- Hamburger Menü Button -->
-                    <button class="navbar-toggler ms-3" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <button class="navbar-toggler ms-3" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false"
+                        aria-label="Toggle navigation">
                         <span class="navbar-toggler-icon"></span>
                     </button>
                 </div>
-                <!-- Navigation -->
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <div class="navbar-nav">
                         <a class="nav-link fw-bold" href="startseite.html" style="font-size: 1.4rem;">Startseite</a>
-                        <a class="nav-link active fw-bold" href="dokumentation.html" style="font-size: 1.4rem;">Dokumentation</a>
+                        <a class="nav-link active fw-bold" href="dokumentation.html"
+                            style="font-size: 1.4rem;">Dokumentation</a>
                         <a class="nav-link fw-bold" href="impressum.html" style="font-size: 1.4rem;">Impressum</a>
                     </div>
                 </div>
@@ -45,16 +42,102 @@
     </header>
 
     <main>
-        <div class="container-fluid text-center text-white my-3">
-            <h1>Dokumentation</h1>
+        <div class="container text-white my-4">
+            <h1 class="text-center mb-4">Dokumentation</h1>
+
             <p>
-                Thank you for choosing to use the Terra Classifier. <br>To give you the best possible experience
-                with our product, we have put together an overview of all the buttons, including how they work
-                and operating instructions.
+                Diese Webanwendung wurde im Rahmen einer Bsc-Arbeit am Institut für Geoinformatik der Universität
+                Münster entwickelt und dient als Werkzeug für die Studierenden zur Darstellung georäumlicher Daten.
+                Im Zentrum steht eine interaktive <strong>Leaflet-Karte</strong>, ergänzt durch drei zentrale
+                Funktionselemente im linken Seitenbereich.
+            </p>
+
+            <h3>1. Layer-Auswahl</h3>
+            <p>
+                Über den Button <strong>"Layer"</strong> kann aus einer Liste von Geodatenlayer ausgewählt werden, die
+                über den <a href="http://zdm-studmap.uni-muenster.de:8080/geoserver/web/?0"
+                    target="_blank">Geoserver</a> eingebunden sind.
+                Es kann jeweils nur ein Layer ausgewählt werden. Nach Auswahl und Bestätigung wird die Layer auf der
+                Karte dargestellt.
+                Zusätzlich öffnet sich ein Popup-Fenster mit den Capabilities-Informationen sowie einer WMS-URL zur
+                Nutzung in lokalen GIS-Anwendungen wie QGIS.
+            </p>
+
+            <h3>2. Upload eigener Daten</h3>
+            <p>
+                Über die Funktion <strong>"Upload"</strong> können eigene Geodaten temporär, für die jeweilige Sitzung
+                in die Anwendung geladen werden.
+                Unterstützt werden die folgenden Formate:
+            </p>
+
+            <div class="table-responsive my-3">
+                <table class="table table-bordered table-striped table-light">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Format</th>
+                            <th>Hinweise</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>.shp</td>
+                            <td>Alle zugehörigen Dateien (.shp, .shx, .prj, .dbf) müssen gemeinsam ausgewählt werden.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>.geojson</td>
+                            <td>UTF-8-kodiert.</td>
+                        </tr>
+                        <tr>
+                            <td>.kml</td>
+                            <td>KML 2.2 und UTF-8-kodiert.</td>
+                        </tr>
+                        <tr>
+                            <td>.csv</td>
+                            <td>
+                                Die CSV-Datei muss korrekt formatiert sein:
+                                <br><strong>Für Punkte:</strong><br>
+                                <code>name,lat,lon</code><br>
+                                <code>Domplatz,51.9625,7.6256</code><br><br>
+                                <strong>Für komplexe Geometrien:</strong><br>
+                                <code>name,geometry,lat,lon</code><br>
+                                <code>Promenade,"LINESTRING(7.6256 51.9625, 7.6200 51.9600, 7.6150 51.9580)",,</code><br>
+                                <code>Aasee,"POLYGON((7.6132 51.9555, 7.6170 51.9570, 7.6180 51.9540, 7.6132 51.9555))",,</code><br><br>
+                                Die Spalten <code>lat</code> und <code>lon</code> bleiben leer bei Geometrien in der
+                                Spalte <code>geometry</code>.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>.gpx</td>
+                            <td>Standardkonformes GPX 1.1-Dateiformat und UTF-8-kodiert.</td>
+                        </tr>
+                        <tr>
+                            <td>.tif / .geotiff</td>
+                            <td>Kann je nach Dateigröße längere Ladezeiten verursachen. Georeferenzierung erforderlich.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>3. NDVI-Berechnung</h3>
+            <p>
+                Über die Schaltfläche <strong>"Select Layer for processing NDVI"</strong> können die zwei auf dem
+                Geoserver vorhandenen Layers mit Sentinel-2-Daten für die Regionen Münster und Norderney ausgewählt
+                werden.
+                Mithilfe eines integrierten <abbr title="Web Processing Service">WPS</abbr>-Prozesses auf dem Geoserver
+                kann ein NDVI-Wert (Normalized Difference Vegetation Index) berechnet werden.
+                Das berechnete Ergebnis wird automatisch als .tif heruntergeladen und direkt in der Leaflet-Karte
+                angezeigt.
+            </p>
+
+            <p class="mt-4">
+                Bei Fragen zur Funktionalität oder Datenverarbeitung wenden Sie sich gerne an:<br>
+                <strong>Andreas Struffert-Froböse</strong> (<a
+                    href="mailto:a_stru03@uni-muenster.de">a_stru03@uni-muenster.de</a>)
             </p>
         </div>
     </main>
-    <!-- Utilities -->
-    <link rel="stylesheet" type="text/css" href="/css/dokumentation.css">
-
 </body>
+
+</html>

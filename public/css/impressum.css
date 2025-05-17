@@ -1,18 +1,16 @@
-html {
-  position: relative;
+html, body {
   height: 100%;
-  padding-bottom: auto;
-}
-
-.nav-link {
-  margin-left: 20px; /* Fügt links zusätzlichen Innenabstand hinzu */
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 main {
+  flex: 1;
   display: flex;
   justify-content: center;
   background-color: rgb(51, 55, 58);
-  height: calc(100vh - 115px);
   overflow: auto;
 }
 
@@ -21,6 +19,9 @@ main {
   height: 40px;
 }
 
+.nav-link {
+  margin-left: 20px;
+}
 
 /* Define breakpoints for different screen sizes */
 @media (min-width: 1200px) {
