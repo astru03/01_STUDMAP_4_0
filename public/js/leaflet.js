@@ -187,110 +187,129 @@ $(document).ready(function () {
 
   var wmsLayer;
 
-  $('#applyFilters').on('click', function () {
-    const selectedLayers = $('.layer-checkbox:checked').map(function () {
-      return $(this).val();
-    }).get();
-    //Unterscheidung ob UAS 2018 oder OpenNRW gewählt wurde, je nach auswahl wird die URL für das WMS angepasst.
-    if (selectedLayers.length === 1 && selectedCategory) {
-      const selectedLayer = selectedLayers[0];
-      let geoserverBaseUrl;
+  const activeLayers = {}; // <== GLOBALE Variable ganz oben im Skript definieren
 
-      if (selectedCategory === 'OpenNRW') {
-        geoserverBaseUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/OpenNRW/ows";
-      } else if (selectedCategory === 'UAS 2018') {
-        //geoserverBaseUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/ivv6mapsarcgis/ows";
-        geoserverBaseUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/UASarcgis/ows";
-      } else {
-        alert("Ungültige Kategorie gewählt.");
-        return;
-      }
+$('#applyFilters').on('click', function () {
+  const selectedLayers = $('.layer-checkbox:checked').map(function () {
+    return $(this).val();
+  }).get();
 
-      const wmsUrl = `${geoserverBaseUrl}?service=WMS&version=1.3.0&request=GetMap&layers=${selectedLayer}&styles=&format=image/png&transparent=true`;
+  if (selectedLayers.length === 1 && selectedCategory) {
+    const selectedLayer = selectedLayers[0];
 
-      if (wmsLayer) {
-        map.removeLayer(wmsLayer);
-      }
-
-      wmsLayer = L.tileLayer.wms(geoserverBaseUrl, {
-        layers: selectedLayer,
-        format: 'image/png',
-        transparent: true,
-        attribution: "&copy; OpenNRW"
-      }).addTo(map);
-
-      //setzt die WMSURL und den Namen
-      $('#wmsUrlInput').val(wmsUrl);
-      $('#wmsLayerName').text(selectedLayer);
-
-      //**********WICHTIG FÜR SERVER ANPASSEN***********
-      const getCapabilitiesUrl = `http://localhost:3000/proxy?url=${encodeURIComponent("http://zdm-studmap.uni-muenster.de:8080/geoserver/ows?service=WMS&version=1.3.0&request=GetCapabilities")}`;
-      //const getCapabilitiesUrl = "/proxy?url=" + encodeURIComponent("http://zdm-studmap.uni-muenster.de:8080/geoserver/ows?service=WMS&version=1.3.0&request=GetCapabilities");
-      console.log(getCapabilitiesUrl);
-
-      // Ladekreis anzeigen
-      $('#loadingCircle').show();
-
-      //hole aus den getCapabilities das entsprechende Koordinatensystem
-      $.ajax({
-        url: getCapabilitiesUrl,
-        dataType: 'xml',
-        success: function (xml) {
-          const layerElement = $(xml).find('Layer > Layer > Name').filter(function () {
-            return $(this).text() === selectedLayer;
-          }).closest('Layer');
-
-          if (layerElement.length === 0) {
-            console.error("Layer nicht gefunden in GetCapabilities.");
-            alert("Layer nicht gefunden in GetCapabilities.");
-            return;
-          }
-
-          let bbox;
-          const bboxElement = layerElement.find('BoundingBox[CRS="EPSG:4326"], BoundingBox[CRS="CRS:84"]').first();
-          if (bboxElement.length > 0) {
-            bbox = [
-              [parseFloat(bboxElement.attr('miny')), parseFloat(bboxElement.attr('minx'))],
-              [parseFloat(bboxElement.attr('maxy')), parseFloat(bboxElement.attr('maxx'))]
-            ];
-          } else {
-            const anyBbox = layerElement.find('BoundingBox').first();
-            if (anyBbox.length > 0) {
-              bbox = [
-                [parseFloat(anyBbox.attr('miny')), parseFloat(anyBbox.attr('minx'))],
-                [parseFloat(anyBbox.attr('maxy')), parseFloat(anyBbox.attr('maxx'))]
-              ];
-            }
-          }
-          if (bbox && selectedCategory === 'UAS 2018') {
-            map.fitBounds(bbox);
-          }
-
-          const abstractText = layerElement.children('Abstract').first().text() || "Keine Beschreibung verfügbar.";
-          $('#wmsAbstract').text(abstractText);
-
-
-          const crsList = layerElement.find('CRS').map(function () {
-            return $(this).text();
-          }).get();
-
-          $('#wmsCrs').text(crsList.join(", "));
-          $('#loadingCircle').hide();
-          $('#wmsInfoModal').modal('show');
-        },
-        error: function (xhr, status, error) {
-          console.error("Fehler bei der CRS-Abfrage:", status, error);
-          alert("Fehler beim Abrufen der GetCapabilities: " + error);
-          $('#loadingCircle').hide();
-          $('#wmsInfoModal').modal('show');
-        }
-      });
-
-      $('#layerModal').modal('hide');
-    } else {
-      alert("Bitte genau einen Layer auswählen und eine Kategorie wählen.");
+    // Layer bereits geladen?
+    if (activeLayers[selectedLayer]) {
+      alert("Dieser Layer wurde bereits geladen.");
+      return;
     }
-  });
+
+    let geoserverBaseUrl;
+    if (selectedCategory === 'OpenNRW') {
+      geoserverBaseUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/OpenNRW/ows";
+    } else if (selectedCategory === 'UAS 2018') {
+      geoserverBaseUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/UASarcgis/ows";
+    } else {
+      alert("Ungültige Kategorie gewählt.");
+      return;
+    }
+
+    const wmsUrl = `${geoserverBaseUrl}?service=WMS&version=1.3.0&request=GetMap&layers=${selectedLayer}&styles=&format=image/png&transparent=true`;
+
+    // WMS-Layer hinzufügen
+    const wmsLayer = L.tileLayer.wms(geoserverBaseUrl, {
+      layers: selectedLayer,
+      format: 'image/png',
+      transparent: true,
+      attribution: "&copy; Geoserver"
+    }).addTo(map);
+
+    // Layer-Objekt speichern
+    activeLayers[selectedLayer] = {
+      layer: wmsLayer,
+      visible: true
+    };
+
+    // Contentliste (Checkbox)
+    $('#activeLayerList').append(`
+      <div class="form-check">
+        <input class="form-check-input content-layer-toggle" type="checkbox" id="content-${selectedLayer}" checked data-layer="${selectedLayer}">
+        <label class="form-check-label" for="content-${selectedLayer}">
+          ${selectedLayer}
+        </label>
+      </div>
+    `);
+
+    // Layer aus Auswahl entfernen (visuell)
+    $(`.layer-checkbox[value="${selectedLayer}"]`).closest('.form-check').remove();
+
+    // WMS-Info anzeigen
+    $('#wmsUrlInput').val(wmsUrl);
+    $('#wmsLayerName').text(selectedLayer);
+
+    const getCapabilitiesUrl = `http://localhost:3000/proxy?url=${encodeURIComponent("http://zdm-studmap.uni-muenster.de:8080/geoserver/ows?service=WMS&version=1.3.0&request=GetCapabilities")}`;
+
+    $('#loadingCircle').show();
+
+    $.ajax({
+      url: getCapabilitiesUrl,
+      dataType: 'xml',
+      success: function (xml) {
+        const layerElement = $(xml).find('Layer > Layer > Name').filter(function () {
+          return $(this).text() === selectedLayer;
+        }).closest('Layer');
+
+        if (layerElement.length === 0) {
+          console.error("Layer nicht gefunden in GetCapabilities.");
+          alert("Layer nicht gefunden in GetCapabilities.");
+          return;
+        }
+
+        let bbox;
+        const bboxElement = layerElement.find('BoundingBox[CRS="EPSG:4326"], BoundingBox[CRS="CRS:84"]').first();
+        if (bboxElement.length > 0) {
+          bbox = [
+            [parseFloat(bboxElement.attr('miny')), parseFloat(bboxElement.attr('minx'))],
+            [parseFloat(bboxElement.attr('maxy')), parseFloat(bboxElement.attr('maxx'))]
+          ];
+        } else {
+          const anyBbox = layerElement.find('BoundingBox').first();
+          if (anyBbox.length > 0) {
+            bbox = [
+              [parseFloat(anyBbox.attr('miny')), parseFloat(anyBbox.attr('minx'))],
+              [parseFloat(anyBbox.attr('maxy')), parseFloat(anyBbox.attr('maxx'))]
+            ];
+          }
+        }
+
+        if (bbox && selectedCategory === 'UAS 2018') {
+          map.fitBounds(bbox);
+        }
+
+        const abstractText = layerElement.children('Abstract').first().text() || "Keine Beschreibung verfügbar.";
+        $('#wmsAbstract').text(abstractText);
+
+        const crsList = layerElement.find('CRS').map(function () {
+          return $(this).text();
+        }).get();
+
+        $('#wmsCrs').text(crsList.join(", "));
+        $('#loadingCircle').hide();
+        $('#wmsInfoModal').modal('show');
+      },
+      error: function (xhr, status, error) {
+        console.error("Fehler bei der CRS-Abfrage:", status, error);
+        alert("Fehler beim Abrufen der GetCapabilities: " + error);
+        $('#loadingCircle').hide();
+        $('#wmsInfoModal').modal('show');
+      }
+    });
+
+    $('#layerModal').modal('hide');
+  } else {
+    alert("Bitte genau einen Layer auswählen und eine Kategorie wählen.");
+  }
+});
+
 
   $('#copyWmsUrl').on('click', function () {
     var wmsUrlInput = document.getElementById("wmsUrlInput");
@@ -305,6 +324,22 @@ $(document).ready(function () {
       $('.layer-checkbox').not(this).prop('checked', false);
     }
   });
+
+  // Sichtbarkeit über Contentliste (Checkbox) steuern
+$(document).on('change', '.content-layer-toggle', function () {
+  const layerName = $(this).data('layer');
+  const isChecked = $(this).is(':checked');
+
+  if (activeLayers[layerName]) {
+    if (isChecked) {
+      map.addLayer(activeLayers[layerName].layer);
+      activeLayers[layerName].visible = true;
+    } else {
+      map.removeLayer(activeLayers[layerName].layer);
+      activeLayers[layerName].visible = false;
+    }
+  }
+});
 
 });
 
