@@ -113,8 +113,7 @@ const categories = {
       },
       'Höhenlinien und Höhenpunkte': {
         layers: {
-          'WMS_NW_HL_HP_SCHWARZ': 'OpenNRW:WMS_NW_HL_HP_SCHWARZ',
-          'WMS_NW_DGK5': 'OpenNRW:WMS_NW_DGK5'
+          'WMS_NW_HL_HP_SCHWARZ': 'OpenNRW:WMS_NW_HL_HP_SCHWARZ'
         }
       },
       'Digitales Oberflächenmodell': {
@@ -131,6 +130,21 @@ const categories = {
     }
   }
 };
+
+function getLayerLabel(layerName) {
+  for (const catKey in categories) {
+    const category = categories[catKey];
+    for (const subKey in category.subcategories) {
+      const layers = category.subcategories[subKey].layers;
+      for (const label in layers) {
+        if (layers[label] === layerName) {
+          return label;
+        }
+      }
+    }
+  }
+  return layerName; // fallback, falls nicht gefunden
+}
 
 $(document).ready(function () {
   const $categories = $('#categories');
@@ -158,13 +172,13 @@ $(document).ready(function () {
 
       if (subcategory.layers) {
         Object.keys(subcategory.layers).forEach((layerKey) => {
-          $layers.append(`
-            <div class="form-check">
-              <input class="form-check-input layer-checkbox" type="checkbox" value="${subcategory.layers[layerKey]}" id="${layerKey}">
-              <label class="form-check-label" for="${layerKey}">
-                ${layerKey}
-              </label>
-            </div>`);
+        $layers.append(`
+          <div class="form-check">
+            <input class="form-check-input layer-checkbox" type="checkbox" value="${subcategory.layers[layerKey]}" id="${layerKey}" data-category="${catKey}">
+            <label class="form-check-label" for="${layerKey}">
+              ${layerKey}
+            </label>
+          </div>`);
         });
       }
 
@@ -196,6 +210,8 @@ $('#applyFilters').on('click', function () {
 
   if (selectedLayers.length === 1 && selectedCategory) {
     const selectedLayer = selectedLayers[0];
+    const selectedLayerCheckbox = $('.layer-checkbox:checked');
+    selectedCategory = selectedLayerCheckbox.data('category') || selectedCategory;
 
     // Layer bereits geladen?
     if (activeLayers[selectedLayer]) {
@@ -223,21 +239,31 @@ $('#applyFilters').on('click', function () {
       attribution: "&copy; Geoserver"
     }).addTo(map);
 
+    // DEBUG LOGS
+console.log("Layer geladen:", selectedLayer);
+console.log("Aktive Layeranzahl:", Object.keys(activeLayers).length);
+console.log("Aktive Layer:", Object.keys(activeLayers));
+
     // Layer-Objekt speichern
     activeLayers[selectedLayer] = {
       layer: wmsLayer,
-      visible: true
+      visible: true,
+      category: selectedCategory // <== hier wird die Quelle gespeichert
     };
 
     // Contentliste (Checkbox)
     $('#activeLayerList').append(`
-      <div class="form-check">
-        <input class="form-check-input content-layer-toggle" type="checkbox" id="content-${selectedLayer}" checked data-layer="${selectedLayer}">
-        <label class="form-check-label" for="content-${selectedLayer}">
-          ${selectedLayer}
-        </label>
+      <div class="form-check d-flex align-items-center justify-content-between active-layer-entry" data-layer="${selectedLayer}">
+        <div>
+          <input class="form-check-input content-layer-toggle" type="checkbox" id="content-${selectedLayer}" checked data-layer="${selectedLayer}">
+          <label class="form-check-label ms-1" for="content-${selectedLayer}">
+            ${getLayerLabel(selectedLayer)}
+          </label>
+        </div>
+        <button class="btn btn-sm btn-danger remove-layer-btn" data-layer="${selectedLayer}" title="Layer entfernen">&times;</button>
       </div>
     `);
+
 
     // Layer aus Auswahl entfernen (visuell)
     $(`.layer-checkbox[value="${selectedLayer}"]`).closest('.form-check').remove();
@@ -284,6 +310,14 @@ $('#applyFilters').on('click', function () {
         if (bbox && selectedCategory === 'UAS 2018') {
           map.fitBounds(bbox);
         }
+
+        if (selectedLayer === 'OpenNRW:WMS_NW_VK250') {
+        const muensterBounds = [
+          [51.8, 7.4],
+          [52.1, 7.8]
+        ];
+        map.fitBounds(muensterBounds);
+      }
 
         const abstractText = layerElement.children('Abstract').first().text() || "Keine Beschreibung verfügbar.";
         $('#wmsAbstract').text(abstractText);
@@ -339,6 +373,51 @@ $(document).on('change', '.content-layer-toggle', function () {
       activeLayers[layerName].visible = false;
     }
   }
+});
+
+// Layer komplett entfernen
+$(document).on('click', '.remove-layer-btn', function () {
+  const layerName = $(this).data('layer');
+
+  if (activeLayers[layerName]) {
+  // 👉 Kategorie und Layer-Metadaten sichern, bevor sie gelöscht werden
+  const originalCategory = activeLayers[layerName].category;
+
+  // Von der Karte entfernen
+  map.removeLayer(activeLayers[layerName].layer);
+
+  // Aus activeLayers entfernen
+  delete activeLayers[layerName];
+
+  // Aus der aktiven Liste entfernen
+  $(this).closest('.active-layer-entry').remove();
+
+  // Layer wieder zur Auswahl-Liste hinzufügen
+  const matchingLabel = Object.entries(categories[originalCategory].subcategories).flatMap(([subKey, sub]) =>
+    Object.entries(sub.layers).map(([label, name]) => ({ label, name, subKey }))
+  ).find(layer => layer.name === layerName);
+
+  if (matchingLabel) {
+      const subcategories = $(`.category-button[data-category="${originalCategory}"]`).siblings('.subcategories');
+      subcategories.slideDown(); // Subkategorie sichtbar machen (nur wenn notwendig)
+
+      const subLayerContainer = subcategories
+        .find('.subcategory-section')
+        .filter((i, el) => $(el).find('button').text() === matchingLabel.subKey)
+        .find('.layers');
+
+          const newLayerCheckbox = $(`
+        <div class="form-check">
+          <input class="form-check-input layer-checkbox" type="checkbox" value="${matchingLabel.name}" id="${matchingLabel.label}" data-category="${originalCategory}">
+          <label class="form-check-label" for="${matchingLabel.label}">
+            ${matchingLabel.label}
+          </label>
+        </div>
+      `);
+
+      subLayerContainer.append(newLayerCheckbox);
+  }
+}
 });
 
 });
