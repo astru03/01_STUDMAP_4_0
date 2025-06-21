@@ -16,18 +16,18 @@
     integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
     crossorigin="anonymous"></script>
 
-  <!-- Leaflet CSS -->
+  <!--Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 
-  <!-- Leaflet JS -->
+  <!--Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-  <!-- Leaflet-easy-button plugin CSS -->
+  <!--Leaflet-easy-button plugin CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.css">
 
-  <!-- Leaflet-easy-button plugin JS-->
+  <!--Leaflet-easy-button plugin JS-->
   <script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
 
   <!--jQuery-->
@@ -40,16 +40,16 @@
   <!--jQuery UI JS-->
   <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
 
-  <!--shp-->  
+  <!--shp-->
   <script src="https://unpkg.com/shpjs@latest/dist/shp.js"></script>
 
-  <!--kml omnivore-->  
+  <!--kml omnivore-->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-omnivore/0.3.4/leaflet-omnivore.min.js"></script>
 
-  <!--gpx -->  
+  <!--gpx-->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.5.0/gpx.min.js"></script>
 
-  <!-- GeoTIFF-Bibliotheken über CDN -->
+  <!--GeoTIFF-Bibliotheken über CDN-->
   <script src="https://unpkg.com/georaster"></script>
   <script src="https://unpkg.com/georaster-layer-for-leaflet"></script>
 
@@ -88,7 +88,7 @@
   </main>
 
   <!--------------------------->
-  <!-- Layer Selection Popup -->
+  <!-- Modalfenster zur Layer-Auswahl -->
   <!--------------------------->
   <div class="modal fade" id="layerModal" tabindex="-1" aria-labelledby="layerModalLabel" aria-hidden="true"
     data-bs-backdrop="true">
@@ -99,9 +99,8 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <!-- Categories and Subcategories -->
+          <!-- Kategorien und -Subkategorien -->
           <div id="categories">
-            <!-- Categories and subcategories will be dynamically added here -->
           </div>
         </div>
         <div class="modal-footer">
@@ -112,11 +111,10 @@
     </div>
   </div>
 
-<!--------------------------->
-<!-- Contentliste Modal -->
- <!--------------------------->
-<!-- Aktive Layer Sidebar -->
-<div id="activeLayerSidebar" style="
+  <!--------------------------->
+  <!-- Modalfenster zur Aktive Layer Sidebar -->
+  <!--------------------------->
+  <div id="activeLayerSidebar" style="
   position: absolute;
   top: 200px;
   left: 20px;
@@ -129,15 +127,13 @@
   overflow-y: auto;
   width: 250px;
 ">
-  <h6>Aktive Layer</h6>
-  <div id="activeLayerList">
-    <!-- Dynamische Checkboxen werden hier eingefügt -->
+    <h6>Aktive Layer</h6>
+    <div id="activeLayerList"> <!-- Dynamische Checkboxen werden hier eingefügt -->
+    </div>
   </div>
-</div>
-
 
   <!--------------------------->
-  <!-- Upload Selection Modal -->
+  <!-- Modalfenster für den Upload -->
   <!--------------------------->
   <div class="modal fade" id="uploadInfoModal" tabindex="-1" aria-labelledby="uploadInfoLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-md">
@@ -153,7 +149,8 @@
             <li>.kml</li>
             <li>.csv</li>
             <li>.gpx</li>
-            <li>.geotif (Hinweis: Das Einladen von geotif's kann aufgrund deren Größe etwas Zeit in anspruch nehmen)</li>
+            <li>.geotif (Hinweis: Das Einladen von geotif's kann aufgrund deren Größe etwas Zeit in anspruch nehmen)
+            </li>
           </ul>
           <p class="text-muted">
             Weitere Informationen finden Sie in der <a href="dokumentation.html" class="text-primary">Dokumentation</a>.
@@ -166,7 +163,9 @@
     </div>
   </div>
 
-  <!-- generisches Bootstrap-Modal für Fehlermeldungs-Popup -->
+  <!--------------------------->
+  <!-- generisches Modalfenster für Fehlermeldungen -->
+  <!--------------------------->
   <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
@@ -175,8 +174,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
         </div>
         <div class="modal-body">
-          <!-- Fehlermeldung wird hier dynamisch eingefügt -->
-          <p id="errorMessage"></p>
+          <p id="errorMessage"></p> <!-- Fehlermeldung wird hier dynamisch eingefügt -->
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
@@ -186,7 +184,7 @@
   </div>
 
   <!--------------------------->
-  <!-- NDVI Selection Modal -->
+  <!-- Modalfenster für NDVI Berechnung -->
   <!--------------------------->
   <div class="modal fade" id="ndviModal" tabindex="-1" aria-labelledby="ndviModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-md">
@@ -207,40 +205,41 @@
       </div>
     </div>
   </div>
-  
 
+  <!--------------------------->
+  <!-- Modalfenster für die WMS-Info -->
+  <!--------------------------->
+  <div class="modal fade" id="wmsInfoModal" tabindex="-1" aria-labelledby="wmsInfoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="wmsInfoModalLabel">WMS Layer Informationen</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p><b>Layer-Name:</b> <span id="wmsLayerName"></span></p>
+          <p><strong>Beschreibung:</strong> <span id="wmsAbstract"></span></p>
+          <p><b>Koordinatensystem:</b> <span id="wmsCrs"></span></p>
+          <p><b>WMS URL (getCapabilities):</b></p>
+          <input type="text" id="wmsUrlInput" class="form-control" readonly>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
+          <button type="button" class="btn btn-primary" id="copyWmsUrl">URL Kopieren</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-
+  <!--------------------------->
+  <!-- Ladekreis -->
+  <!--------------------------->
+  <div id="loadingCircle"
+    style="display: none; border: 5px solid #f3f3f3; border-top: 5px solid #3498db; border-radius: 50%; width: 50px; height: 50px; animation: spin 2s linear infinite; position: absolute; top: 50%; left: 50%; margin-top: -25px; margin-left: -25px; z-index: 1001;">
+  </div>
 
   <!-- Utilities -->
   <link rel="stylesheet" type="text/css" href="/css/startseite.css">
   <script type="text/javascript" src="/js/leaflet.js"></script>
-  
-<!-- WMS-Info Modal -->
-<div class="modal fade" id="wmsInfoModal" tabindex="-1" aria-labelledby="wmsInfoModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="wmsInfoModalLabel">WMS Layer Informationen</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <p><b>Layer-Name:</b> <span id="wmsLayerName"></span></p>
-        <p><strong>Beschreibung:</strong> <span id="wmsAbstract"></span></p>
-        <p><b>Koordinatensystem:</b> <span id="wmsCrs"></span></p>
-        <p><b>WMS URL (getCapabilities):</b></p>
-        <input type="text" id="wmsUrlInput" class="form-control" readonly>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
-        <button type="button" class="btn btn-primary" id="copyWmsUrl">URL Kopieren</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Ladekreis -->
-<div id="loadingCircle" style="display: none; border: 5px solid #f3f3f3; border-top: 5px solid #3498db; border-radius: 50%; width: 50px; height: 50px; animation: spin 2s linear infinite; position: absolute; top: 50%; left: 50%; margin-top: -25px; margin-left: -25px; z-index: 1001;">
-</div>
 
 </body>

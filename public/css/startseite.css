@@ -1,29 +1,20 @@
 html,
 body {
   height: 100%;
-  /* Setzt die Höhe auf den gesamten verfügbaren Bildschirm */
   margin: 0;
-  /* Entfernt den Standard-Margin des Browsers */
   padding: 0;
-  /* Entfernt den Standard-Padding des Browsers */
 }
 
 .nav-link {
   margin-left: 20px;
-  /* Fügt links zusätzlichen Innenabstand hinzu */
 }
 
 nav.navbar {
   position: fixed;
-  /* Fixiert die Navbar oben auf der Seite */
   width: 100%;
-  /* Lässt die Navbar die gesamte Breite einnehmen */
   z-index: 1000;
-  /* Stellt sicher, dass die Navbar über anderen Inhalten bleibt */
   background-color: rgba(45, 98, 159, 0.7);
-  /* Halten Sie die Transparenz */
   backdrop-filter: blur(5px);
-  /* Fügt einen leichten Blur-Effekt hinzu */
 }
 
 main {
@@ -53,74 +44,74 @@ main {
 /* Ladekreis */
 /*------------------------------------------------------------------------*/
 #loadingCircle {
-  border: 5px solid #f3f3f3; /* Heller grauer Rand */
-  border-top: 5px solid #3498db; /* Blaue Farbe für den rotierenden Teil */
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #3498db;
   border-radius: 50%;
   width: 50px;
   height: 50px;
   animation: spin 2s linear infinite;
-  position: absolute; /* Positioniere den Ladekreis relativ zum nächsten positionierten Elternteil */
-  top: 50%;          /* Zentriere vertikal */
-  left: 50%;         /* Zentriere horizontal */
-  margin-top: -25px;  /* Verschiebe um die halbe Höhe nach oben */
-  margin-left: -25px; /* Verschiebe um die halbe Breite nach links */
-  z-index: 1001;      /* Stelle sicher, dass er über anderen Elementen liegt */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -25px;
+  margin-left: -25px;
+  z-index: 1001;
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /*------------------------------------------------------------------------*/
-/* Layer Selection Style */
+/* Layer-Auswahl Style */
 /*------------------------------------------------------------------------*/
 .modal-content {
   background-color: #f8f9fa;
-  border-radius: 5px; /* Reduced rounded corners */
+  border-radius: 5px;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
 }
+
 .modal-header {
   border-bottom: 1px solid #dee2e6;
   padding: 15px 20px;
 }
+
 .modal-title {
-  font-size: 0.9rem; /* Smaller title size */
+  font-size: 0.9rem;
   font-weight: bold;
   color: #2d629f;
 }
+
 .modal-footer {
   border-top: 1px solid #dee2e6;
   padding: 15px 20px;
 }
+
 #categories .category-section {
   display: block;
   width: 100%;
 }
+
 #categories button {
-  border-radius: 5px; /* Match modal corner style */
+  border-radius: 5px;
 }
+
 .subcategories .form-check {
   margin-bottom: 10px;
-  padding-left: 20px; /* Indent subcategories */
+  padding-left: 20px;
 }
+
 .subcategories {
   border-left: 2px solid #dee2e6;
   margin-left: 10px;
   padding-left: 10px;
 }
 
-/*------------------------------------------------------------------------*/
-/* Upload Selection Style */
-/*------------------------------------------------------------------------*/
-
-/*------------------------------------------------------------------------*/
-/* NDVI Selection Style */
-/*------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------*/
-/* Define breakpoints for different screen sizes */
 .leaflet-control-zoom {
   position: absolute;
   top: 70px;
@@ -128,75 +119,92 @@ main {
   left: auto;
   transition: top 0.3s ease;
 }
+
 .layer-button-container,
 .upload-button-container,
 .ndvi-button-container {
   position: absolute;
   top: 70px;
   left: 10px;
-  transition: top 0.3s ease; /* For smooth transition when position changes */
+  transition: top 0.3s ease;
 }
 
-/* Default positions for larger screens */
+
+/* Default Position für großen Bildschirm */
 .layer-button-container {
   top: 70px;
 }
+
 .upload-button-container {
   top: 110px;
 }
+
 .ndvi-button-container {
   top: 150px;
 }
 
 
-/* Adjust positions when the navbar toggles (on mobile) */
+/* Responsive Design */
+/* Umbruchpunkte für verschiedene Bildschirmgrößen */
 @media (max-width: 1100px) {
   .modal-dialog {
-    left: 10% !important; /* Verschiebe das Modal bei kleinen Bildschirmen */
+    left: 10% !important;
   }
 }
+
 
 @media (max-width: 992px) {
   .layer-button-container {
     top: 180px;
   }
+
   .upload-button-container {
     top: 220px;
   }
+
   .ndvi-button-container {
     top: 260px;
   }
+
   .modal-dialog {
-    left: 10% !important; /* Verschiebe das Modal bei kleinen Bildschirmen */
+    left: 10% !important;
   }
 }
 
+
 @media (max-width: 768px) {
   .layer-button-container {
-    top: 180px; /* Adjusted for small screens */
+    top: 180px;
   }
+
   .upload-button-container {
     top: 220px;
   }
+
   .ndvi-button-container {
     top: 260px;
   }
+
   .modal-dialog {
-    left: 10% !important; /* Verschiebe das Modal bei kleinen Bildschirmen */
+    left: 10% !important;
   }
 }
+
 
 @media (max-width: 576px) {
   .layer-button-container {
     top: 180px;
   }
+
   .upload-button-container {
     top: 220px;
   }
+
   .ndvi-button-container {
     top: 260px;
   }
+
   .modal-dialog {
-    left: 12% !important; /* Verschiebe das Modal bei kleinen Bildschirmen */
+    left: 12% !important;
   }
 }

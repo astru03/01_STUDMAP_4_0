@@ -1,46 +1,47 @@
-// create a variable for the map
+// Initialisierung der Leaflet-Karte
+// Zentriert auf Münster
 var map = L.map('map', {
   zoomControl: false
 }).setView([51.975, 7.61], 12);
 
-// Zoom-Control manuell hinzufügen – oben rechts
+// Zoom-Control hinzugefügt – oben rechts
 L.control.zoom({
   position: 'topright'
 }).addTo(map);
 
-// add the base map
+// OpenStreetMap-Standard-BaseLayers hinzugefügt
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
   attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 }).addTo(map);
 
-// Füge ein Event hinzu, damit die Karte sich anpasst, wenn das Fenster seine Größe ändert
+// Event Listener zur Reaktion auf Größenänderungen des Browserfensters.
 window.addEventListener('resize', function () {
-  map.invalidateSize(); // Veranlasst die Karte, ihre Größe neu zu berechnen
+  map.invalidateSize(); // Aktualisiert die Kartendarstellung auf die neue Fenstergröße
 });
 
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
-// Layer-EasyButton Funktionen
+// Layer-Auswahl EasyButton Funktionen
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 
-// Open the Layer Modal
+// Leaflet EasyButton integrieren
 const layerButton = L.easyButton(
   `<img src="../images/Layers.svg" alt="Layer" style="width:20px;height:20px;">`,
   function () {
-    $('#layerModal').modal('show'); // Bootstrap function to show modal
+    $('#layerModal').modal('show'); // Bootstrap-Funktion zur Anzeige des Modals
   }
 ).addTo(map);
 
-// Tooltip hinzufügen
+// Zusätzliche Klassen und Attribute für UI-Elemente
 layerButton.button.classList.add("layer-button");
 layerButton.button.setAttribute("title", "Layer");
-
-// Container-Klasse hinzufügen
 layerButton._container.classList.add("layer-button-container");
 
-// Dynamically Add Categories and Subcategories
+// ------------------------------
+// Strukturierung von Layer-Kategorien und -Subkategorien
+// ------------------------------
 const categories = {
   'UAS 2018': {
     name: 'UAS 2018',
@@ -131,6 +132,9 @@ const categories = {
   }
 };
 
+// ------------------------------
+// Hilfsfunktion zur Rückgabe eines Layer-Labels anhand des WMS-Namens
+// ------------------------------
 function getLayerLabel(layerName) {
   for (const catKey in categories) {
     const category = categories[catKey];
@@ -143,15 +147,22 @@ function getLayerLabel(layerName) {
       }
     }
   }
-  return layerName; // fallback, falls nicht gefunden
+  return layerName; // falls kein Label gefunden wurde
 }
 
+// ------------------------------
+// Initialisierung nach DOM-Ready: Rendering der Layerstruktur im Modal
+// ------------------------------
 $(document).ready(function () {
+  // Referenz auf das HTML-Element, in dem die Kategorien angezeigt werden
   const $categories = $('#categories');
-  let selectedCategory = null;
+  let selectedCategory = null; // Speichert die aktuell gewählte Kategorie
 
+  // Kategorien iterieren und im UI abbilden
   Object.keys(categories).forEach((catKey) => {
     const category = categories[catKey];
+
+    // Kategorie-Button + Container für Unterkategorien erstellen
     const $categorySection = $(`<div class="category-section mb-3">
       <button class="btn btn-outline-primary w-100 category-button" data-category="${catKey}">${category.name}</button>
       <div class="subcategories mt-2" style="display: none;"></div>
@@ -160,6 +171,7 @@ $(document).ready(function () {
     $categories.append($categorySection);
     const $subcategories = $categorySection.find('.subcategories');
 
+    // Unterkategorien einfügen
     Object.keys(category.subcategories).forEach((subKey) => {
       const subcategory = category.subcategories[subKey];
       const $subCategorySection = $(`<div class="subcategory-section mb-2">
@@ -170,9 +182,10 @@ $(document).ready(function () {
       $subcategories.append($subCategorySection);
       const $layers = $subCategorySection.find('.layers');
 
+      // Layer-Checkboxen für jede Unterkategorie
       if (subcategory.layers) {
         Object.keys(subcategory.layers).forEach((layerKey) => {
-        $layers.append(`
+          $layers.append(`
           <div class="form-check">
             <input class="form-check-input layer-checkbox" type="checkbox" value="${subcategory.layers[layerKey]}" id="${layerKey}" data-category="${catKey}">
             <label class="form-check-label" for="${layerKey}">
@@ -182,12 +195,14 @@ $(document).ready(function () {
         });
       }
 
+      // Event: Layerliste ein-/ausklappen
       $subCategorySection.find('button').on('click', function (e) {
         e.stopPropagation();
         $layers.slideToggle();
       });
     });
 
+    // Event: Unterkategorien ein-/ausklappen
     $categorySection.find('.category-button').on('click', function (e) {
       selectedCategory = $(this).data('category');
       if ($subcategories.is(":visible")) {
@@ -199,60 +214,57 @@ $(document).ready(function () {
     });
   });
 
-  var wmsLayer;
+  // Objekt zur Verwaltung der aktuell aktiven Layer
+  const activeLayers = {};
 
-  const activeLayers = {}; // <== GLOBALE Variable ganz oben im Skript definieren
+  // Button "Filter anwenden" gedrückt. Ist der "Ok" Button in der Layer Auswahl
+  $('#applyFilters').on('click', function () {
+    const selectedLayers = $('.layer-checkbox:checked').map(function () { //Wählt alle aktivierten Checkboxen
+      return $(this).val(); // Iteriert über diese Checkboxen und sammelt ihre value-Werte
+    }).get(); // Konvertiert das jQuery-Objekt in ein normales JavaScript-Array
 
-$('#applyFilters').on('click', function () {
-  const selectedLayers = $('.layer-checkbox:checked').map(function () {
-    return $(this).val();
-  }).get();
+    if (selectedLayers.length === 1 && selectedCategory) { // Es muss genau ein Layer ausgewählt und eine Kategorie gesetz sein. Wenn das nicht zutrifft, wird der Layer nicht geladen – eine Schutzmaßnahme gegen Mehrfachauswahl
+      const selectedLayer = selectedLayers[0];
+      const selectedLayerCheckbox = $('.layer-checkbox:checked');
+      selectedCategory = selectedLayerCheckbox.data('category') || selectedCategory;
 
-  if (selectedLayers.length === 1 && selectedCategory) {
-    const selectedLayer = selectedLayers[0];
-    const selectedLayerCheckbox = $('.layer-checkbox:checked');
-    selectedCategory = selectedLayerCheckbox.data('category') || selectedCategory;
+      // Verhindere doppeltes Laden
+      if (activeLayers[selectedLayer]) {
+        alert("Dieser Layer wurde bereits geladen.");
+        return;
+      }
 
-    // Layer bereits geladen?
-    if (activeLayers[selectedLayer]) {
-      alert("Dieser Layer wurde bereits geladen.");
-      return;
-    }
+      // Geoserver-URL auf Basis der gewählten Kategorie
+      let geoserverBaseUrl;
+      if (selectedCategory === 'OpenNRW') {
+        geoserverBaseUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/OpenNRW/ows";
+      } else if (selectedCategory === 'UAS 2018') {
+        geoserverBaseUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/UASarcgis/ows";
+      } else {
+        alert("Ungültige Kategorie gewählt.");
+        return;
+      }
+      
+      // Vollständige WMS-URL erzeugen (nur zu Anzeigezwecken)
+      const wmsUrl = `${geoserverBaseUrl}?service=WMS&version=1.3.0&request=GetMap&layers=${selectedLayer}&styles=&format=image/png&transparent=true`;
 
-    let geoserverBaseUrl;
-    if (selectedCategory === 'OpenNRW') {
-      geoserverBaseUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/OpenNRW/ows";
-    } else if (selectedCategory === 'UAS 2018') {
-      geoserverBaseUrl = "http://zdm-studmap.uni-muenster.de:8080/geoserver/UASarcgis/ows";
-    } else {
-      alert("Ungültige Kategorie gewählt.");
-      return;
-    }
+      // WMS-Layer in Leaflet-Karte laden
+      const wmsLayer = L.tileLayer.wms(geoserverBaseUrl, {
+        layers: selectedLayer,
+        format: 'image/png',
+        transparent: true,
+        attribution: "&copy; Geoserver"
+      }).addTo(map);
 
-    const wmsUrl = `${geoserverBaseUrl}?service=WMS&version=1.3.0&request=GetMap&layers=${selectedLayer}&styles=&format=image/png&transparent=true`;
+      // Layer-Objekt speichern
+      activeLayers[selectedLayer] = {
+        layer: wmsLayer,
+        visible: true,
+        category: selectedCategory
+      };
 
-    // WMS-Layer hinzufügen
-    const wmsLayer = L.tileLayer.wms(geoserverBaseUrl, {
-      layers: selectedLayer,
-      format: 'image/png',
-      transparent: true,
-      attribution: "&copy; Geoserver"
-    }).addTo(map);
-
-    // DEBUG LOGS
-console.log("Layer geladen:", selectedLayer);
-console.log("Aktive Layeranzahl:", Object.keys(activeLayers).length);
-console.log("Aktive Layer:", Object.keys(activeLayers));
-
-    // Layer-Objekt speichern
-    activeLayers[selectedLayer] = {
-      layer: wmsLayer,
-      visible: true,
-      category: selectedCategory // <== hier wird die Quelle gespeichert
-    };
-
-    // Contentliste (Checkbox)
-    $('#activeLayerList').append(`
+      // Layer in die aktive Liste einfügen
+      $('#activeLayerList').append(`
       <div class="form-check d-flex align-items-center justify-content-between active-layer-entry" data-layer="${selectedLayer}">
         <div>
           <input class="form-check-input content-layer-toggle" type="checkbox" id="content-${selectedLayer}" checked data-layer="${selectedLayer}">
@@ -264,87 +276,91 @@ console.log("Aktive Layer:", Object.keys(activeLayers));
       </div>
     `);
 
+      // Layer aus Auswahl entfernen (visuell)
+      $(`.layer-checkbox[value="${selectedLayer}"]`).closest('.form-check').remove();
 
-    // Layer aus Auswahl entfernen (visuell)
-    $(`.layer-checkbox[value="${selectedLayer}"]`).closest('.form-check').remove();
+      // WMS-Info anzeigen
+      $('#wmsUrlInput').val(wmsUrl);
+      $('#wmsLayerName').text(selectedLayer);
 
-    // WMS-Info anzeigen
-    $('#wmsUrlInput').val(wmsUrl);
-    $('#wmsLayerName').text(selectedLayer);
+      const getCapabilitiesUrl = `http://localhost:3000/proxy?url=${encodeURIComponent("http://zdm-studmap.uni-muenster.de:8080/geoserver/ows?service=WMS&version=1.3.0&request=GetCapabilities")}`;
 
-    const getCapabilitiesUrl = `http://localhost:3000/proxy?url=${encodeURIComponent("http://zdm-studmap.uni-muenster.de:8080/geoserver/ows?service=WMS&version=1.3.0&request=GetCapabilities")}`;
+      $('#loadingCircle').show();
 
-    $('#loadingCircle').show();
+      // Metadaten über GetCapabilities abfragen
+      $.ajax({
+        url: getCapabilitiesUrl,
+        dataType: 'xml',
+        success: function (xml) {
+          const layerElement = $(xml).find('Layer > Layer > Name').filter(function () {
+            return $(this).text() === selectedLayer;
+          }).closest('Layer');
 
-    $.ajax({
-      url: getCapabilitiesUrl,
-      dataType: 'xml',
-      success: function (xml) {
-        const layerElement = $(xml).find('Layer > Layer > Name').filter(function () {
-          return $(this).text() === selectedLayer;
-        }).closest('Layer');
-
-        if (layerElement.length === 0) {
-          console.error("Layer nicht gefunden in GetCapabilities.");
-          alert("Layer nicht gefunden in GetCapabilities.");
-          return;
-        }
-
-        let bbox;
-        const bboxElement = layerElement.find('BoundingBox[CRS="EPSG:4326"], BoundingBox[CRS="CRS:84"]').first();
-        if (bboxElement.length > 0) {
-          bbox = [
-            [parseFloat(bboxElement.attr('miny')), parseFloat(bboxElement.attr('minx'))],
-            [parseFloat(bboxElement.attr('maxy')), parseFloat(bboxElement.attr('maxx'))]
-          ];
-        } else {
-          const anyBbox = layerElement.find('BoundingBox').first();
-          if (anyBbox.length > 0) {
-            bbox = [
-              [parseFloat(anyBbox.attr('miny')), parseFloat(anyBbox.attr('minx'))],
-              [parseFloat(anyBbox.attr('maxy')), parseFloat(anyBbox.attr('maxx'))]
-            ];
+          if (layerElement.length === 0) {
+            console.error("Layer nicht gefunden in GetCapabilities.");
+            alert("Layer nicht gefunden in GetCapabilities.");
+            return;
           }
+
+        // BBOX lesen und Karte zoomen
+          let bbox;
+          const bboxElement = layerElement.find('BoundingBox[CRS="EPSG:4326"], BoundingBox[CRS="CRS:84"]').first();
+          if (bboxElement.length > 0) {
+            bbox = [
+              [parseFloat(bboxElement.attr('miny')), parseFloat(bboxElement.attr('minx'))],
+              [parseFloat(bboxElement.attr('maxy')), parseFloat(bboxElement.attr('maxx'))]
+            ];
+          } else {
+            const anyBbox = layerElement.find('BoundingBox').first();
+            if (anyBbox.length > 0) {
+              bbox = [
+                [parseFloat(anyBbox.attr('miny')), parseFloat(anyBbox.attr('minx'))],
+                [parseFloat(anyBbox.attr('maxy')), parseFloat(anyBbox.attr('maxx'))]
+              ];
+            }
+          }
+
+          // Falls Layer UAS 2018 spezielle Zoomeinstellung braucht
+          if (bbox && selectedCategory === 'UAS 2018') {
+            map.fitBounds(bbox);
+          }
+
+          // Sonderbehandlung für NRW-Karte. Die Karte zoomt automatisch auf Münster, wenn die NRW-Karte ausgewählt wird.
+          if (selectedLayer === 'OpenNRW:WMS_NW_VK250') {
+            const muensterBounds = [
+              [51.8, 7.4],
+              [52.1, 7.8]
+            ];
+            map.fitBounds(muensterBounds);
+          }
+
+          // Layerbeschreibung & unterstützte Koordinatensysteme anzeigen 
+          const abstractText = layerElement.children('Abstract').first().text() || "Keine Beschreibung verfügbar.";
+          $('#wmsAbstract').text(abstractText);
+
+          const crsList = layerElement.find('CRS').map(function () {
+            return $(this).text();
+          }).get();
+
+          $('#wmsCrs').text(crsList.join(", "));
+          $('#loadingCircle').hide();
+          $('#wmsInfoModal').modal('show');
+        },
+        error: function (xhr, status, error) {
+          console.error("Fehler bei der CRS-Abfrage:", status, error);
+          alert("Fehler beim Abrufen der GetCapabilities: " + error);
+          $('#loadingCircle').hide();
+          $('#wmsInfoModal').modal('show');
         }
+      });
 
-        if (bbox && selectedCategory === 'UAS 2018') {
-          map.fitBounds(bbox);
-        }
+      $('#layerModal').modal('hide');
+    } else {
+      alert("Bitte genau einen Layer auswählen und eine Kategorie wählen.");
+    }
+  });
 
-        if (selectedLayer === 'OpenNRW:WMS_NW_VK250') {
-        const muensterBounds = [
-          [51.8, 7.4],
-          [52.1, 7.8]
-        ];
-        map.fitBounds(muensterBounds);
-      }
-
-        const abstractText = layerElement.children('Abstract').first().text() || "Keine Beschreibung verfügbar.";
-        $('#wmsAbstract').text(abstractText);
-
-        const crsList = layerElement.find('CRS').map(function () {
-          return $(this).text();
-        }).get();
-
-        $('#wmsCrs').text(crsList.join(", "));
-        $('#loadingCircle').hide();
-        $('#wmsInfoModal').modal('show');
-      },
-      error: function (xhr, status, error) {
-        console.error("Fehler bei der CRS-Abfrage:", status, error);
-        alert("Fehler beim Abrufen der GetCapabilities: " + error);
-        $('#loadingCircle').hide();
-        $('#wmsInfoModal').modal('show');
-      }
-    });
-
-    $('#layerModal').modal('hide');
-  } else {
-    alert("Bitte genau einen Layer auswählen und eine Kategorie wählen.");
-  }
-});
-
-
+  // Button zum Kopieren der WMS-URL 
   $('#copyWmsUrl').on('click', function () {
     var wmsUrlInput = document.getElementById("wmsUrlInput");
     wmsUrlInput.select();
@@ -353,60 +369,60 @@ console.log("Aktive Layer:", Object.keys(activeLayers));
     alert("WMS-URL wurde kopiert!");
   });
 
+  // Sicherstellen, dass immer nur ein Layer gleichzeitig aktiv ist 
   $(document).on('change', '.layer-checkbox', function () {
     if (this.checked) {
       $('.layer-checkbox').not(this).prop('checked', false);
     }
   });
 
-  // Sichtbarkeit über Contentliste (Checkbox) steuern
-$(document).on('change', '.content-layer-toggle', function () {
-  const layerName = $(this).data('layer');
-  const isChecked = $(this).is(':checked');
+  // Sichtbarkeit über aktive Layer Liste (Checkbox) steuern
+  $(document).on('change', '.content-layer-toggle', function () {
+    const layerName = $(this).data('layer');
+    const isChecked = $(this).is(':checked');
 
-  if (activeLayers[layerName]) {
-    if (isChecked) {
-      map.addLayer(activeLayers[layerName].layer);
-      activeLayers[layerName].visible = true;
-    } else {
-      map.removeLayer(activeLayers[layerName].layer);
-      activeLayers[layerName].visible = false;
+    if (activeLayers[layerName]) {
+      if (isChecked) {
+        map.addLayer(activeLayers[layerName].layer);
+        activeLayers[layerName].visible = true;
+      } else {
+        map.removeLayer(activeLayers[layerName].layer);
+        activeLayers[layerName].visible = false;
+      }
     }
-  }
-});
+  });
 
-// Layer komplett entfernen
-$(document).on('click', '.remove-layer-btn', function () {
-  const layerName = $(this).data('layer');
+  // Layer komplett entfernen
+  $(document).on('click', '.remove-layer-btn', function () {
+    const layerName = $(this).data('layer');
 
-  if (activeLayers[layerName]) {
-  // 👉 Kategorie und Layer-Metadaten sichern, bevor sie gelöscht werden
-  const originalCategory = activeLayers[layerName].category;
+    if (activeLayers[layerName]) {  // Ist dieser Layer überhaupt aktiv in der activeLayers-Liste gespeichert
+      // Entfernt den Layer von der Leaflet-Karte und löscht ihn aus dem Speicherobjekt activeLayers
+      // Die category-Info wird noch vorher gesichert, wird noch benötigt, um die Layer-Checkbox wieder zur Auswahl hinzuzufügen.
+      const originalCategory = activeLayers[layerName].category;
+      map.removeLayer(activeLayers[layerName].layer);
+      delete activeLayers[layerName];
+      $(this).closest('.active-layer-entry').remove();
 
-  // Von der Karte entfernen
-  map.removeLayer(activeLayers[layerName].layer);
+      // Layer-Checkbox wieder zur Layer-Auswahl hinzufügen
+      const matchingLabel = Object.entries(categories[originalCategory].subcategories).flatMap(([subKey, sub]) =>
+        // Sucht im ursprünglichen categories-Objekt nach dem passenden Layer anhand seines Namens
+        // Gibt auch das passende Label und den Namen der Subkategorie zurück
+        Object.entries(sub.layers).map(([label, name]) => ({ label, name, subKey }))
+      ).find(layer => layer.name === layerName);
 
-  // Aus activeLayers entfernen
-  delete activeLayers[layerName];
+      if (matchingLabel) {  //Falls dieser Layer erfolgreich gefunden wurde
+        const subcategories = $(`.category-button[data-category="${originalCategory}"]`).siblings('.subcategories');
+        subcategories.slideDown(); // Holt das zugehörige Subkategorien-Element zur ursprünglichen Kategorie und macht es sichtbar.
 
-  // Aus der aktiven Liste entfernen
-  $(this).closest('.active-layer-entry').remove();
+        // Sucht das passende Subkategorien-Element und fügt den Layer-Checkbox hinzu
+        const subLayerContainer = subcategories
+          .find('.subcategory-section')
+          .filter((i, el) => $(el).find('button').text() === matchingLabel.subKey)
+          .find('.layers');
 
-  // Layer wieder zur Auswahl-Liste hinzufügen
-  const matchingLabel = Object.entries(categories[originalCategory].subcategories).flatMap(([subKey, sub]) =>
-    Object.entries(sub.layers).map(([label, name]) => ({ label, name, subKey }))
-  ).find(layer => layer.name === layerName);
-
-  if (matchingLabel) {
-      const subcategories = $(`.category-button[data-category="${originalCategory}"]`).siblings('.subcategories');
-      subcategories.slideDown(); // Subkategorie sichtbar machen (nur wenn notwendig)
-
-      const subLayerContainer = subcategories
-        .find('.subcategory-section')
-        .filter((i, el) => $(el).find('button').text() === matchingLabel.subKey)
-        .find('.layers');
-
-          const newLayerCheckbox = $(`
+        // Erstellt die neue Layer-Checkbox und fügt sie dem Subkategorien-Element hinzu
+        const newLayerCheckbox = $(`
         <div class="form-check">
           <input class="form-check-input layer-checkbox" type="checkbox" value="${matchingLabel.name}" id="${matchingLabel.label}" data-category="${originalCategory}">
           <label class="form-check-label" for="${matchingLabel.label}">
@@ -414,11 +430,11 @@ $(document).on('click', '.remove-layer-btn', function () {
           </label>
         </div>
       `);
-
-      subLayerContainer.append(newLayerCheckbox);
-  }
-}
-});
+        // Fügt die neue Layer-Checkbox dem Subkategorien-Element hinzu
+        subLayerContainer.append(newLayerCheckbox);
+      }
+    }
+  });
 
 });
 
@@ -440,18 +456,16 @@ const uploadButton = L.easyButton(
   }
 ).addTo(map);
 
-// Tooltip für den Upload-Button
+// Zusätzliche Klassen und Attribute für UI-Elemente
 uploadButton.button.classList.add("upload-button");
 uploadButton.button.setAttribute("title", "Upload");
-
-// Container-Klasse hinzufügen
 uploadButton._container.classList.add("upload-button-container");
 
 // Event-Listener für den OK-Button
 document.getElementById("confirmUpload").addEventListener("click", function () {
   $('#uploadInfoModal').modal('hide'); // Popup fenster schließen
 
-  // Datei-Upload-Dialog öffnen
+  // öffnen des Datei-Upload-Dialog
   const fileInput = document.createElement('input');
   fileInput.type = 'file';
   fileInput.multiple = true; // mehrere Daten können gleichzeitig ausgewählt werden
@@ -467,7 +481,7 @@ document.getElementById("confirmUpload").addEventListener("click", function () {
       file.name.endsWith('.prj') || file.name.endsWith('.dbf')
     );
 
-    // Wenn Shape-Datei enthalten, dann werden diese gruppiert.
+    // Wenn Shape-Datei enthalten, dann werden diese gruppiert
     if (containsShapefile) {
       const fileGroups = groupShapefileComponents(files);
 
@@ -650,7 +664,6 @@ function isValidCoordinate(coord) {
     coord[1] >= -90 && coord[1] <= 90     // Breitengrad
   );
 }
-
 //------------------------------------------------
 
 
@@ -878,7 +891,7 @@ function handleGeoTIFF(file) {
 
 
 //------------------------------------------------
-// Globale Variable für die Fehlermeldung Modal-Instanz
+// Globale Variable für die Fehlermeldung des Modalfensters
 let errorModalInstance = null;
 
 // Funktion zum Anzeigen einer Fehlermeldung
@@ -926,12 +939,12 @@ function validateFileType(file) {
 // Layer-Metadaten: BoundingBox und EPSG für beide Layer
 const layerMeta = {
   "Sentinel2_NDVI:Sentinel2 Muenster": {
-    bbox: [400000, 5753000, 410500, 5762000], // [minX, minY, maxX, maxY]
-    epsg: "32632"
+    bbox: [400000, 5753000, 410500, 5762000],
+    epsg: "32632"  // UTM-Zone 32N, passt zu Münster
   },
   "Sentinel2_NDVI:Sentinel2 Norderney": {
-    bbox: [773000, 5957000, 787000, 5962500], // Beispielwerte, bitte ggf. anpassen!
-    epsg: "32631"
+    bbox: [773000, 5957000, 787000, 5962500],
+    epsg: "32631"  // UTM-Zone 31N, passt zu Norderney
   }
 };
 
@@ -943,6 +956,7 @@ const ndviButton = L.easyButton(
   }
 ).addTo(map);
 
+// Zusätzliche Klassen und Attribute für UI-Elemente
 ndviButton.button.classList.add("ndvi-button");
 ndviButton.button.setAttribute("title", "Select Layer for processing NDVI");
 ndviButton._container.classList.add("ndvi-button-container");
@@ -950,9 +964,13 @@ ndviButton._container.classList.add("ndvi-button-container");
 // NDVI-Layer auf Karte anzeigen
 let ndviLayerOnMap = null;
 
+// Funktion zum Starten des NDVI-Prozesses
 document.getElementById("ndviModalStart").onclick = function () {
+  // Ausgewählten Layer-Namen aus dem Dropdown lesen
   const layerName = document.getElementById("ndviLayerSelect").value;
+  // Bootstrap-Modalfenster-Instanz des NDVI-Dialogs holen
   const modalInstance = bootstrap.Modal.getInstance(document.getElementById('ndviModal'));
+  // Falls Modalfenster geöffnet ist, schließen und funktion "runNdviWpsProcess" mit Layer-Namen aufrufen
   if (modalInstance) modalInstance.hide();
   runNdviWpsProcess(layerName);
 };
@@ -980,8 +998,10 @@ function runNdviWpsProcess(layerName) {
 
   const wcsUrl = escapeXmlUrl(wcsUrlRaw);
 
+  // Berechnung des NDVI-Wertes nach Dokumentation von Jan
   const jiffleScript = "nir = src[7]; red = src[3]; dest = (nir - red) / (nir + red);";
 
+  // XML-Anfrage für WPS-Aufruf erstellen
   const xml = `
     <wps:Execute service="WPS" version="1.0.0"
         xmlns:wps="http://www.opengis.net/wps/1.0.0"
@@ -1017,6 +1037,7 @@ function runNdviWpsProcess(layerName) {
   }
   console.log("WPS XML Request:", xml);
 
+  // WPS-Aufruf mit XML-Anfrage durchführen
   fetch(wpsUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'text/xml' },
@@ -1030,7 +1051,7 @@ function runNdviWpsProcess(layerName) {
       if (typeof $('#loadingCircle').hide === 'function') {
         $('#loadingCircle').hide();
       }
-      // Download-Link erzeugen (optional)
+      // Download-Link erzeugen
       const downloadUrl = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = downloadUrl;
@@ -1042,36 +1063,40 @@ function runNdviWpsProcess(layerName) {
       // Anzeige auf Leaflet
       const reader = new FileReader();
       reader.onload = function () {
+        // GeoTIFF-Daten mit georaster.js parsen
         parseGeoraster(reader.result).then(georaster => {
           console.log("GeoRaster geladen:", georaster);
 
+          // Prüfen, ob das Raster gültig ist (Breite und Höhe vorhanden)
           if (!georaster || !georaster.width || !georaster.height) {
             alert("GeoTIFF konnte nicht geladen werden.");
             return;
           }
 
-          // Min und Max aus den Werten ermitteln
+          // Min- und Maxwerte im NDVI-Raster bestimmen
           let min = Infinity;
           let max = -Infinity;
 
           const values = georaster.values[0]; // NDVI-Band (1. Band)
+          // Folgender Code durchläuft jedes Pixel und findet den niedrigsten und höchsten NDVI-Wert im gesamten Bild.
           for (let y = 0; y < values.length; y++) {
             for (let x = 0; x < values[y].length; x++) {
               const val = values[y][x];
-              if (val === null || isNaN(val)) continue;
-              if (val < min) min = val;
-              if (val > max) max = val;
+              if (val === null || isNaN(val)) continue; // ungültige Werte überspringen
+              if (val < min) min = val; // neues Minimum speichern
+              if (val > max) max = val; // neues Maximum speichern
             }
           }
 
           console.log("NDVI Min:", min);
           console.log("NDVI Max:", max);
-          
-          // Vorherigen Layer entfernen
+
+          // Vorherigen Layer entfernen, falls vorhanden
           if (ndviLayerOnMap) {
             map.removeLayer(ndviLayerOnMap);
           }
 
+          // Neue NDVi-Layer mit Graustufe darstellen
           ndviLayerOnMap = new GeoRasterLayer({
             georaster: georaster,
             opacity: 1.0,
@@ -1079,9 +1104,11 @@ function runNdviWpsProcess(layerName) {
             pixelValuesToColorFn: values => {
               const ndvi = values[0];
               if (ndvi === null || isNaN(ndvi)) return null;
-
+              // Die NDVI-Werte werden normalisiert, um Kontraste darzustellen.
               const norm = (ndvi - min) / (max - min);
+              // Daraus wird ein Grauwert erzeugt
               const gray = Math.round(norm * 255);
+              // In Hex-Farbe umwandeln und jeder Pixel erhält eine Farbe entsprechend seines NDVI-Wertes
               const hex = `#${gray.toString(16).padStart(2, '0').repeat(3)}`;
               return hex;
             }
@@ -1097,7 +1124,7 @@ function runNdviWpsProcess(layerName) {
           alert("Fehler beim Parsen des GeoTIFFs.");
         });
       };
-      reader.readAsArrayBuffer(blob);
+      reader.readAsArrayBuffer(blob); //Der GeoTIFF wird als Binärdaten (ArrayBuffer) gelesen und danach verarbeitet.
     })
     .catch(err => {
       if (typeof $('#loadingCircle').hide === 'function') {
@@ -1107,8 +1134,6 @@ function runNdviWpsProcess(layerName) {
       alert("Fehler beim NDVI-Prozess: " + err);
     });
 }
-
-
 //------------------------------------------------------------------------
 
 
