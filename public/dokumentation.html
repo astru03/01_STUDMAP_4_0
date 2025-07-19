@@ -43,10 +43,9 @@
 
     <main>
         <div class="container text-white my-4">
-            <h1 class="text-center mb-4">Dokumentation</h1>
 
             <p>
-                Diese Webanwendung wurde im Rahmen einer Bsc-Arbeit am Institut für Geoinformatik der Universität
+                Diese Webanwendung wurde im Rahmen einer Bachelorarbeit am Institut für Geoinformatik der Universität
                 Münster entwickelt und dient als Werkzeug für die Studierenden zur Darstellung georäumlicher Daten.
                 Im Zentrum steht eine interaktive <strong>Leaflet-Karte</strong>, ergänzt durch drei zentrale
                 Funktionselemente im linken Seitenbereich.
@@ -58,9 +57,11 @@
                 über den <a href="http://zdm-studmap.uni-muenster.de:8080/geoserver/web/?0"
                     target="_blank">Geoserver</a> eingebunden sind.
                 Es kann jeweils nur ein Layer ausgewählt werden. Nach Auswahl und Bestätigung wird die Layer auf der
-                Karte dargestellt.
-                Zusätzlich öffnet sich ein Popup-Fenster mit den Capabilities-Informationen sowie einer WMS-URL zur
-                Nutzung in lokalen GIS-Anwendungen wie QGIS.
+                Karte dargestellt und in der <strong>"Aktive Layer"</strong> aufgeführt. Hierrüber ist es möglich die zuvor ausgewählten Layers
+                in der Leafletkarte ein- und auszublenden. Weiterhin können die ausgewählten Layers aus der <strong>"Aktive Layer"</strong> wieder entfernt 
+                werden wodurch Ihre erneute Auswahl über <strong>"Layer"</strong> wieder ermöglicht wird.
+                Nachdem über <strong>"Layer"</strong> ein Layer ausgewählt wurde öffnet sich zusätzlich ein Popup-Fenster 
+                mit den Capabilities-Informationen des jeweiligen Layer sowie einer WMS-URL zur Nutzung in lokalen GIS-Anwendungen wie QGIS.
             </p>
 
             <h3>2. Upload eigener Daten</h3>
@@ -122,12 +123,12 @@
 
             <h3>3. NDVI-Berechnung</h3>
             <p>
-                Über die Schaltfläche <strong>"Select Layer for processing NDVI"</strong> können die zwei auf dem
-                Geoserver vorhandenen Layers mit Sentinel-2-Daten für die Regionen Münster und Norderney ausgewählt
-                werden.
+                Über die Schaltfläche <strong>"Select Layer for processing NDVI"</strong> können zwei auf dem
+                Geoserver vorhandenen Layers ausgewählt werden. 
+                Bei den Layers handelt es sich um Sentinel-2-Daten für die Regionen Münster und Norderney.
                 Mithilfe eines integrierten <abbr title="Web Processing Service">WPS</abbr>-Prozesses auf dem Geoserver
-                kann ein NDVI-Wert (Normalized Difference Vegetation Index) berechnet werden.
-                Das berechnete Ergebnis wird automatisch als .tif heruntergeladen und direkt in der Leaflet-Karte
+                wird für die gewählte Layer ein NDVI-Wert (Normalized Difference Vegetation Index) berechnet.
+                Das Ergebnis wird automatisch als .tif heruntergeladen und direkt in der Leaflet-Karte
                 angezeigt.
             </p>
 
